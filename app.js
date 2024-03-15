@@ -1,30 +1,44 @@
+require('express-async-errors');
+require('dotenv').config();
+const startupDebugger = require('debug')('app:startup')   // replaces console.log, use DEBUG=app:* or  DEBUG=app:startup to run
+// const dbDebugger = require('debug')('app:db')
+const connectDB = require('./db/connect')
+const studentRouter = require('./routers/studentRouter');
+const homeRouter = require('./routers/homeRouter');
+const errorHandler= require('./middleware/errorHandler')
+const morgan = require('morgan')
 const express = require('express');
 const app = express();
-const connectDB = require('./db/connect')
-require('dotenv').config();
-const router = require('./routers/studentRouter');
-const errorHandler= require('./middleware/errorHandler')
+const jwt = require('jsonwebtoken')
+app.set('view-engine', 'pug')
+app.set('views', './views')
+
 
 app.use(express.json());
+app.use(express.urlencoded({extended:true}))
+app.use(express.static('public'))
 
 
-
-app.get('/', (req,res)=>{
-    res.status(200).send('Homepage');
-})
-app.use('/student', router )
+if (app.get('env') === 'development' ) {
+    app.use(morgan('tiny'))
+    startupDebugger('morgan enabled...')
+}
+app.use('/', homeRouter )
+app.use('/api/student', studentRouter )
 app.use(errorHandler)
 
-const port = process.env.PORT || 5000
+ const port = process.env.PORT || 5000
 async function start(){
     try {
-        await connectDB(process.env.Mongo_URI)
-        app.listen(port, console.log(`server listening on port ${port}`))
+        const success = await connectDB(process.env.Mongo_URI)
+        if (success) console.log('connected')
+        app.listen(port, startupDebugger(`server listening on port ${port}`))
     } catch (error) {
-        console.log(error)
+        startupDebugger(error)
     }
 }
 start()
-// app.listen(5000, ()=>{
-//     console.log('server listening on port 5000');
+
+// app.listen(port, ()=>{
+//    startupDebugger('server listening on port ' + port);
 // })

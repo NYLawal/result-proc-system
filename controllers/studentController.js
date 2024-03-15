@@ -1,62 +1,60 @@
 const Student = require('../models/studentModel')
+const validateNewStudent = require('../validators/studentValidator')
 const scores = require('../models/scoreModel')
 const classes = require('../models/classModel')
-const asyncWrapper = require('../middleware/async')
+// const asyncWrapper = require('../middleware/async')
 
 
-const addStudent = asyncWrapper(async(req,res) =>{
+const addStudent = async(req,res,next) =>{
+    const { error } = validateNewStudent(req.body)
+    if(error) throw error
     const student = await Student.create(req.body)
     res.status(201).json({student, msg:"student added successfully"});
-    })
+    }
 
+const getStudents = async (req,res) => {
+    const pageNumber = req.params.page
+    const pageSize = 5;
+    const students =  await Student
+        .find({})
+        .sort({firstName: 1})
+        .select("admNo firstName lastName status registeredOn")
+        .skip((pageNumber-1)*pageSize)
+        .limit(pageSize) 
+        res.status(200).json({success:"true", students, noOfStudents:students.length});
+    }
 
-const getAllStudents = asyncWrapper(async (req,res) => {
-        const students =  await Student.find({}) 
-            res.status(200).json({success:"true", students});
-    })
-
-const getStudent = asyncWrapper(async (req,res,next) => {
-        const {firstName, lastName} = req.query;
-        const student = await Student.findOne({firstName,lastName})
+const getOneStudent = async (req,res,next) => {
+        const {admNo} = req.query;
+        const student = await Student.findOne({admNo})
         if(!student){
-            // return res.status(404).json({msg:`student with name: ${firstName} ${lastName} does not exist`})
             return next(new Error('Error: no such student found')); 
         }
         res.status(200).json({student, msg:"student found!"})    
-})
+}
 
-const deleteStudent = asyncWrapper(async (req,res,next) =>{
-        let {firstName, lastName} = req.query;   
-        const student = await Student.findOneAndDelete({firstName,lastName});
+const updateStudent = async(req,res,next) =>{
+    let {admNo} = req.query;
+    const student = await Student.findOneAndUpdate({admNo}, req.body,{new:true, runValidators:true });
         if(!student){
             // return res.status(404).json({status:"failed", msg:"no such student found!"});
             return next(new Error('Error: no such student found')); 
         }
-        res.status(200).json({status:"success", msg:"user deleted successfully"});
-})
-
-
-const updateStudent = asyncWrapper(async(req,res,next) =>{
-    let {firstName} = req.query;
-    const student = await Student.findOneAndUpdate({firstName}, req.body,
-         {new:true,
-          runValidators:true
-         });
-    if(!student){
-        // return res.status(404).json({status:"failed", msg:"no such student found!"});
-        return next(new Error('Error: no such student found')); 
+        res.status(200).json({status:"success", msg:"user updated successfully", student});
     }
-    res.status(200).json({status:"success", msg:"user updated successfully", student});
-})
+    
+    const deleteStudent = async (req,res,next) =>{
+            let {admNo} = req.query;   
+            const student = await Student.findOneAndDelete({admNo});
+            if(!student){
+                // return res.status(404).json({status:"failed", msg:"no such student found!"});
+                return next(new Error('Error: no such student found')); 
+            }
+            res.status(200).json({status:"success", msg:"user deleted successfully"});
+    }
 
-// const deleteAllUsers = (req,res)=> {
-//     users.length = 0;
-//     console.log(users);
-//     res.status(200).json({success:"true", data:users})
-// }
 
-
-module.exports = {addStudent, getAllStudents, getStudent, deleteStudent, updateStudent}
+module.exports = {addStudent, getStudents, getOneStudent, deleteStudent, updateStudent}
 
 // *******************************************************************************************************************
 // const getStudent = async (req,res) => {

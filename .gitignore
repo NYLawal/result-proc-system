@@ -1,2 +1,4 @@
 /node_modules
 .env
+populate.js
+test.js
