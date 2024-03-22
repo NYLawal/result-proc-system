@@ -4,6 +4,7 @@ const startupDebugger = require('debug')('app:startup')   // replaces console.lo
 // const dbDebugger = require('debug')('app:db')
 const connectDB = require('./db/connect')
 const studentRouter = require('./routers/studentRouter');
+const scoreRouter = require('./routers/scoreRouter');
 const homeRouter = require('./routers/homeRouter');
 const errorHandler= require('./middleware/errorHandler')
 const morgan = require('morgan')
@@ -25,6 +26,7 @@ if (app.get('env') === 'development' ) {
 }
 app.use('/', homeRouter )
 app.use('/api/student', studentRouter )
+app.use('/api/score', scoreRouter )
 app.use(errorHandler)
 
  const port = process.env.PORT || 5000

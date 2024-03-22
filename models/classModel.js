@@ -28,7 +28,14 @@ const classSchema = new mongoose.Schema({
         // required:[true, 'term cannot be empty'],
         trim:true,
         maxlength:[3, 'maximum characters for number of students is 3']
-        }
+        },
+
+    teacherName:{
+        type: String,
+        required:[true, 'a class must have an assigned teacher'],
+        trim:true,
+        maxlength:[50, 'name cannot be more than 50 characters']
+        },    
 
     })
 
