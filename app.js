@@ -2,6 +2,8 @@ require('express-async-errors');
 require('dotenv').config();
 const startupDebugger = require('debug')('app:startup')   // replaces console.log, use DEBUG=app:* or  DEBUG=app:startup to run
 // const dbDebugger = require('debug')('app:db')
+const Joi = require("joi");
+Joi.objectId = require('joi-objectid')(Joi);
 const connectDB = require('./db/connect')
 const studentRouter = require('./routers/studentRouter');
 const scoreRouter = require('./routers/scoreRouter');

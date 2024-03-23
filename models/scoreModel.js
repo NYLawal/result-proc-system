@@ -28,8 +28,8 @@ const scoreSchema = new mongoose.Schema({
         type: String,
         required: [true, "present class cannot be empty"],
         enum: {
-          values: ["tamyidi", "rawdoh", "adonah", "awwal ibtidahi", "thaani ibtidahi", "thaalith ibtidahi", "roobi ibtidahi", 
-          "khamis ibtidahi", "awwal idaadi", "thaani idaadi", "thaalith idaadi"],
+          values: ["tamyidi", "rawdoh", "adonah", "awwal ibtidahi", "thaani ibtidahi", "thaalith ibtidahi", "raabi ibtidahi", 
+          "khaamis ibtidahi", "awwal idaadi", "thaani idaadi", "thaalith idaadi"],
           message: "{VALUE} is not supported, input a valid class",
         },
         lowercase: true,

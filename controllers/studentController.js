@@ -12,7 +12,7 @@ const addStudent = async (req, res, next) => {
   const { error } = newStudentValidation(req.body);
   if (error) throw error;
   const student = await Student.create(req.body);
-  res.status(201).json({ student, msg: "student added successfully" });
+  res.status(201).json({ status: "success", student, msg: "student added successfully" });
 };
 
 const getStudents = async (req, res, next) => {
@@ -53,7 +53,7 @@ const getStudents = async (req, res, next) => {
 
   res
     .status(200)
-    .json({ success: "true", students, noOfStudents: students.length });
+    .json({ status: "success", students, noOfStudents: students.length });
 };
 
 const getOneStudent = async (req, res, next) => {
@@ -61,7 +61,7 @@ const getOneStudent = async (req, res, next) => {
   const student = await Student.findOne({ admNo });
   dbDebugger(student);
   if (!student) return next(new Error("Error: no such student found"));
-  res.status(200).json({ success: "true", student, msg: "student found!" });
+  res.status(200).json({ status: "success", student, msg: "student found!" });
 };
 
 const getAllStudents = async (req, res, next) => {
@@ -74,7 +74,7 @@ const getAllStudents = async (req, res, next) => {
     .limit(pageSize);
 
   if (!students) return next(new Error("Error: no students found"));
-  res.status(200).json({ success: "true", students, noOfStudents: students.length });
+  res.status(200).json({ status: "success", students, noOfStudents: students.length });
 };
 
 const updateStudent = async (req, res, next) => {
