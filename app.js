@@ -8,6 +8,7 @@ const connectDB = require('./db/connect')
 const studentRouter = require('./routers/studentRouter');
 const scoreRouter = require('./routers/scoreRouter');
 const homeRouter = require('./routers/homeRouter');
+const userRouter = require('./routers/userRouter');
 const errorHandler= require('./middleware/errorHandler')
 const morgan = require('morgan')
 const express = require('express');
@@ -27,8 +28,8 @@ if (app.get('env') === 'development' ) {
     startupDebugger('morgan enabled...')
 }
 app.use('/', homeRouter )
-app.use('/api/student', studentRouter )
-app.use('/api/score', scoreRouter )
+app.use('/api/v1/user', userRouter )
+app.use('/api/v1/student', studentRouter )
 app.use(errorHandler)
 
  const port = process.env.PORT || 5000
