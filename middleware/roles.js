@@ -2,7 +2,7 @@ const { AccessDeniedError } = require("./errors")
 
 function superAdmin(req,res,next){
     const role = req.user.role
-    if (role !== "superadmin") throw new AccessDeniedError("Error: Access Denied!")
+    if (role !== "superadmin") throw new AccessDeniedError("Error: You are not authorised to perform this action!")
     next()
 }
 

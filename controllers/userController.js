@@ -6,6 +6,7 @@ const bcrypt = require('bcrypt')
 // const cryptoRandomString = require('crypto-random-string') 
 const crypto = require('crypto');
 const User = require("../models/userModel");
+const Staff = require("../models/staffModel");
 const Token = require('../models/tokenModel')
 // const sendEmail = require ("../utils/mailHandler")
 const {
@@ -13,7 +14,7 @@ const {
     userLogInValidator,
     forgotPasswordValidator,
     resetPasswordValidator,
-    addAdminValidator
+    addStaffValidator
 } = require("../validators/userValidator");
 const SENDMAIL = require('../utils/mailHandler');
 
@@ -102,28 +103,27 @@ const resetPassword = async(req, res) => {
   }
 
 
-  const addAdmin = async(req,res) =>{
-    const {error} = addAdminValidator(req.body)
+  const addStaff = async(req,res) =>{
+    const {error} = addStaffValidator(req.body)
     if(error) throw error
    
-    const user = await User.findOne({ email: req.body.email });
-    if (!user) throw new BadUserRequestError("Error: invalid email!"); 
-
-    if (user.isAdmin)  res.status(200).send("user is already an admin");
-    else{
-    user.isAdmin = true
-    user.userRole = "admin"
-    await user.save()
+    const emailExists = await Staff.findOne({ email: req.body.email });
+    if (emailExists) throw new BadUserRequestError("Error: an account with this email already exists");
+    const role = req.body.stafferRole;
+    if (role == "SuperAdmin" || role === "Admin" || role === "Bursar"){
+        req.body.isAdmin = true;
+    }
+    const newStaffer = await Staff.create(req.body);
 
     res.status(200).json({
     status: "Success",
-    message: "Successfully added as admin",
-    user:  _.pick(user, ['email', 'isAdmin' ])
+    message: `Successfully added as a ${role}`,
+    staffer:  _.pick(newStaffer, ['stafferName', 'email', 'stafferRole', 'isAdmin' ])
     })
     }
 
-  }
+  
 
 
 
-module.exports = {userSignUp, userLogIn,forgotPassword, resetPassword, addAdmin}
+module.exports = {userSignUp, userLogIn,forgotPassword, resetPassword, addStaff}

@@ -99,8 +99,15 @@ function resetPasswordValidator(user) {
 return schema.validate(user);
 }
 
-function addAdminValidator(user){
+function addStaffValidator(staffer){
   const schema = Joi.object({
+    stafferName:Joi.string()
+    .required()
+    .error(
+      new ValidationError(
+        "Staffer name cannot be empty"
+      )
+    ),
     email:Joi.string()
     .required()
     .email()
@@ -109,10 +116,17 @@ function addAdminValidator(user){
         "Input a valid email"
       )
     ),
+    stafferRole:Joi.string()
+    .required()
+    .error(
+      new ValidationError(
+        "Staffer must have a role"
+      )
+    ),
   }).strict()
   
-  return schema.validate(user);
+  return schema.validate(staffer);
   }
 
 
-  module.exports = {userSignUpValidator, userLogInValidator, forgotPasswordValidator, resetPasswordValidator, addAdminValidator};
+  module.exports = {userSignUpValidator, userLogInValidator, forgotPasswordValidator, resetPasswordValidator, addStaffValidator};
