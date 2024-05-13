@@ -47,10 +47,11 @@ const userLogIn = async (req, res, next) => {
     if (!isValidPassword) throw new UnAuthorizedError("Error: invalid email or password");
 
     const access_token = user.generateToken()
-    res.header('x-auth-token', access_token).status(200).json({
+    res.header('access_token', access_token).status(200).json({
         status: "Success",
         message: "Successfully logged in",
-        user:  _.pick(user, ['_id', 'fullName','email','phoneNumber'])
+        user:  _.pick(user, ['_id','email']),
+        access_token: access_token
     });
 }
 
@@ -108,16 +109,19 @@ const resetPassword = async(req, res) => {
     if(error) throw error
    
     const emailExists = await Staff.findOne({ email: req.body.email });
-    if (emailExists) throw new BadUserRequestError("Error: an account with this email already exists");
+    if (emailExists) throw new BadUserRequestError("Error: An account with this email already exists");
     const role = req.body.stafferRole;
     if (role == "SuperAdmin" || role === "Admin" || role === "Bursar"){
         req.body.isAdmin = true;
     }
+    const bursarExists = await Staff.findOne({ stafferRole: "Bursar" });
+    if (bursarExists) throw new BadUserRequestError("Error: A bursar is already registered");
+
     const newStaffer = await Staff.create(req.body);
 
     res.status(200).json({
     status: "Success",
-    message: `Successfully added as a ${role}`,
+    message: `Successfully added as ${role}`,
     staffer:  _.pick(newStaffer, ['stafferName', 'email', 'stafferRole', 'isAdmin' ])
     })
     }

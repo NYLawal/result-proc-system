@@ -7,7 +7,7 @@ const { UnAuthorizedError, BadUserRequestError } = require('./errors');
   // const token = req.header('x-auth-token');
   // if(!token) throw new BadUserRequestError("Error: no token present");
   const authHeader = req.headers.authorization
-  if(!authHeader || !authHeader.startsWith('Bearer')) throw new BadUserRequestError("Error: no token present, , you need to sign in");
+  if(!authHeader || !authHeader.startsWith('Bearer')) throw new BadUserRequestError("Error: You need to sign in");
   const token = authHeader.split(' ')[1]
   try{
     const payload =  jwt.verify(token, process.env.jwt_secret_key)
@@ -15,7 +15,8 @@ const { UnAuthorizedError, BadUserRequestError } = require('./errors');
     next()
   }
   catch (err){
-    throw new UnAuthorizedError("Error: unauthorised access");
+    console.log(err)
+    throw new UnAuthorizedError("Error: unauthorised access!");
   }
 } 
 module.exports = authenticateUser
