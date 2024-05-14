@@ -7,6 +7,7 @@ const bcrypt = require('bcrypt')
 const crypto = require('crypto');
 const User = require("../models/userModel");
 const Staff = require("../models/staffModel");
+const Student = require("../models/studentModel");
 const Token = require('../models/tokenModel')
 // const sendEmail = require ("../utils/mailHandler")
 const {
@@ -14,7 +15,8 @@ const {
     userLogInValidator,
     forgotPasswordValidator,
     resetPasswordValidator,
-    addStaffValidator
+    addStaffValidator,
+    addStudentValidator
 } = require("../validators/userValidator");
 const SENDMAIL = require('../utils/mailHandler');
 
@@ -81,7 +83,6 @@ const forgotPassword = async (req, res) => {
         res.status(200).send("Password reset link has been sent to your email account");
 }
 
-
 const resetPassword = async(req, res) => {
       const { error } = resetPasswordValidator(req.body);
         if (error) throw error
@@ -102,6 +103,15 @@ const resetPassword = async(req, res) => {
   
         res.status(200).send("Password reset is successful");
   }
+
+  const portalRedirect = async(req,res) =>{
+    let role = req.user.role;
+    res.status(200).json({
+    status: "Success",
+    message: `Successfully authenticated as ${role}`,
+    role
+    })
+    }
 
   const addStaff = async(req,res) =>{
     const {error} = addStaffValidator(req.body)
@@ -130,18 +140,27 @@ const resetPassword = async(req, res) => {
     })
     }
 
-    const portalRedirect = async(req,res) =>{
-        let role = req.user.role;
-
+    const addStudent = async(req,res) =>{
+        const {error} = addStudentValidator(req.body)
+        if(error) throw error
+       
+        const emailExists = await Student.findOne({ email: req.body.email });
+        if (emailExists) throw new BadUserRequestError("Error: An account with this email already exists");
+    
+        const role = req.body.role;
+        const user = await User.findOne({email: req.body.email});
+        user.userRole = role;  //update role of student in user database
+    
+        const newStudent = await Student.create(req.body);
+    
         res.status(200).json({
         status: "Success",
-        message: `Successfully authenticated as ${role}`,
-        role
+        message: `Successfully added as ${role}`,
+        student:  newStudent
         })
         }
-
-  
-
+      
 
 
-module.exports = {userSignUp, userLogIn,forgotPassword, resetPassword, addStaff,portalRedirect}
+
+module.exports = {userSignUp, userLogIn,forgotPassword, resetPassword, addStaff, addStudent, portalRedirect}

@@ -26,6 +26,13 @@ function newStudentValidation(student) {
           "lastname cannot be empty and must be between 3 and 25 characters"
         )
       ),
+    email:Joi.string()
+    .email()
+    .error(
+      new ValidationError(
+        "Input a valid email"
+      )
+    ),
     gender: Joi.string().required(),
     entryClass: Joi.string().required(),
     age: Joi.number()
