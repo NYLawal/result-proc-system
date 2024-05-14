@@ -28,7 +28,7 @@ const userSignUp = async (req, res, next) => {
     // const user = req.body
     const newUser = await User.create(req.body);
     const token = newUser.generateToken()
-    res.header('x-auth-token', token).status(201).json({
+    res.header('access_token', access_token).status(201).json({
         status: "Success",
         message: "User created successfully",
         user:  _.pick(newUser, ['email', 'isAdmin' ])
@@ -103,16 +103,20 @@ const resetPassword = async(req, res) => {
         res.status(200).send("Password reset is successful");
   }
 
-
   const addStaff = async(req,res) =>{
     const {error} = addStaffValidator(req.body)
     if(error) throw error
    
     const emailExists = await Staff.findOne({ email: req.body.email });
     if (emailExists) throw new BadUserRequestError("Error: An account with this email already exists");
+
     const role = req.body.stafferRole;
+    const user = await User.findOne({email: req.body.email});
+    user.userRole = role;  //update role of staff in user database
+
     if (role == "SuperAdmin" || role === "Admin" || role === "Bursar"){
         req.body.isAdmin = true;
+        user.isAdmin = true;  //change staff to admin in user database
     }
     const bursarExists = await Staff.findOne({ stafferRole: "Bursar" });
     if (bursarExists) throw new BadUserRequestError("Error: A bursar is already registered");
@@ -126,8 +130,18 @@ const resetPassword = async(req, res) => {
     })
     }
 
+    const portalRedirect = async(req,res) =>{
+        let role = req.user.role;
+
+        res.status(200).json({
+        status: "Success",
+        message: `Successfully authenticated as ${role}`,
+        role
+        })
+        }
+
   
 
 
 
-module.exports = {userSignUp, userLogIn,forgotPassword, resetPassword, addStaff}
+module.exports = {userSignUp, userLogIn,forgotPassword, resetPassword, addStaff,portalRedirect}

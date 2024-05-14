@@ -17,6 +17,7 @@ function isStudent(req,res,next){
     next()
 }
 
+
 module.exports = {admin, superAdmin, isStudent}
 
 // function authRole(role) {
