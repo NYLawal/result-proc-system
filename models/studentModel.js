@@ -25,14 +25,6 @@ const studentSchema = new mongoose.Schema({
     maxlength: [25, "maximum characters for student name is 15"],
   },
 
-  email: {
-    type: String,
-    trim: true,
-    unique:true,
-  //   index: { unique: true },
-    match: /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/,
-  },
-
   gender: {
     type: String,
     required: [true, "gender cannot be empty"],
@@ -43,19 +35,12 @@ const studentSchema = new mongoose.Schema({
     lowercase: true,
   },
 
-  age: {
-    type: Number,
-    required: [true, "age cannot be empty"],
-    min: [4, "student cannot be less than 4years"],
-    max: [25, "student cannot be more than 25years"],
-  },
-
   entryClass: {
     type: String,
     required: [true, "entry class cannot be empty"],
     enum: {
-      values: ["tamyidi", "rawdoh", "adonah", "awwal ibtidahi", "thaani ibtidahi", "thaalith ibtidahi", "roobi ibtidahi", 
-      "khamis ibtidahi", "awwal idaadi", "thaani idaadi", "thaalith idaadi"],
+      values: ["tamyidi", "rawdoh", "adonah", "awwal ibtidaahi", "thaani ibtidaahi", "thaalith ibtidaahi", "roobi ibtidaahi", 
+      "khamis ibtidaahi", "awwal idaadi", "thaani idaadi", "thaalith idaadi"],
       message: "{VALUE} is not supported, input a valid entry class",
     },
     lowercase: true,
@@ -70,21 +55,63 @@ const studentSchema = new mongoose.Schema({
     ],
   },
 
-  parentContact: {
+  phoneNumber: {
     type: String,
     required: [true, "contact cannot be empty"],
     minlength: [10, "incorrect number of digits for phone mumber"],
     maxlength: [11, "incorrect number of digits for phone mumber"],
   },
 
-  status: {
+  email: {
+    type: String,
+    trim: true,
+    unique:true,
+    match: /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/,
+  },
+
+  parentEmail: {
+    type: String,
+    trim: true,
+    required:[true, "parent email cannot be empty"],
+    match: /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/,
+  },
+
+  stateOfOrigin: {
+    type: String,
+    required: [true, "state cannot be empty"],
+    trim: true,
+    maxlength: [10, "maximum characters for state of origin is 10"],
+  },
+
+  maritalStatus: {
     type: String,
     required: [true, "status cannot be empty"],
+    enum: {
+      values: ["married", "single"],
+      message: "{VALUE} is not supported, status can either be single or married",
+    },
+    default: "single",
+    lowercase: true,
+  },
+
+  studentStatus: {
+    type: String,
+    required: [true, "student status cannot be empty"],
     enum: {
       values: ["current", "past"],
       message: "{VALUE} is not supported, status can either be current or past",
     },
     default: "current",
+    lowercase: true,
+  },
+  
+  nonStudentStatus: {
+    type: String,
+    enum: {
+      values: [ "graduated", "expelled", "left"],
+      message: "{VALUE} is not supported",
+    },
+    default: "graduated",
     lowercase: true,
   },
 
@@ -101,6 +128,26 @@ const studentSchema = new mongoose.Schema({
       "khamis ibtidahi", "awwal idaadi", "thaani idaadi", "thaalith idaadi"],
       message: "{VALUE} is not supported, input a valid class",
     },
+    lowercase: true,
+  },
+
+  classStatus: {
+    type: String,
+    enum: {
+      values: [ "promoted", "repeated"],
+      message: "{VALUE} is not supported",
+    },
+    default: "promoted",
+    lowercase: true,
+  },
+
+  paymentStatus: {
+    type: String,
+    enum: {
+      values: [ "paid", "owing", "scholarship"],
+      message: "{VALUE} is not supported",
+    },
+    default: "owing",
     lowercase: true,
   },
   // scores:{
