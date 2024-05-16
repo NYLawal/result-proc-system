@@ -1,6 +1,6 @@
 const Joi = require("joi");
 const { ValidationError } = require("../middleware/errors");
-// const joiPhoneValidate = Joi.extend(require('joi-phone-number'));
+const joiPhoneValidate = Joi.extend(require('joi-phone-number'));
 
 function userSignUpValidator(user) {
     const schema = Joi.object({
@@ -116,7 +116,37 @@ function addStaffValidator(staffer){
         "Input a valid email"
       )
     ),
-    stafferRole:Joi.string()
+    gender:Joi.string()
+    .required()
+    .error(
+      new ValidationError(
+        "Staffer must have a gender"
+      )
+    ),
+    address:Joi.string()
+    .required()
+    .error(
+      new ValidationError(
+        "Staffer must have an address"
+      )
+    ),
+    phoneNumber: joiPhoneValidate.string()
+    .required()
+    .phoneNumber({ format: "international",
+    strict: true, })
+    .error(
+      new ValidationError(
+        "please input a valid phone number with valid country code"
+      )
+    ),
+    teacherClass:Joi.string()
+    .required()
+    .error(
+      new ValidationError(
+        "Staffer must have a class"
+      )
+    ),
+    role:Joi.string()
     .required()
     .error(
       new ValidationError(

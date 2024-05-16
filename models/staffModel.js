@@ -23,11 +23,30 @@ const staffSchema = new mongoose.Schema(
       type: String,
       maxlength: 1024
     },
-    class: {
+    gender: {
+      type: String,
+      required: [true, "gender cannot be empty"],
+      enum: {
+        values: ["male", "female"],
+        message: "{VALUE} is not supported, student can either be male or female",
+      },
+      lowercase: true,
+    },
+    address: {
+      type: String,
+      required: true,
+      maxlength: 255
+    },
+    phoneNumber: {
+      type: String,
+      required: true,
+      maxlength: 25
+    },
+    teacherClass: {
       type: String,
       maxlength: 25
     },
-    stafferRole: {
+    role: {
       type: String,
       default: "teacher",
       lowercase: true
