@@ -15,8 +15,7 @@ const {
     userLogInValidator,
     forgotPasswordValidator,
     resetPasswordValidator,
-    addStaffValidator,
-    addStudentValidator
+    addStaffValidator
 } = require("../validators/userValidator");
 const SENDMAIL = require('../utils/mailHandler');
 
@@ -25,15 +24,26 @@ const userSignUp = async (req, res, next) => {
     const { error } = userSignUpValidator(req.body);
     if (error) throw error
 
-    const emailExists = await User.findOne({ email: req.body.email });
-    if (emailExists) throw new BadUserRequestError("Error: an account with this email already exists");
+    const user = await User.findOne({ email: req.body.email });
+    if (user) throw new BadUserRequestError("Error: an account with this email already exists");
+
+    const isStudent = await Student.findOne({ email: req.body.email });
+    if (isStudent){
+         req.body.userRole = "student";
+    }
+
+    const isParent = await Student.findOne({ parentEmail: req.body.email });
+    if (isParent){
+         req.body.userRole = "parent";
+    }
+
     // const user = req.body
     const newUser = await User.create(req.body);
     const token = newUser.generateToken()
     res.header('access_token', access_token).status(201).json({
         status: "Success",
         message: "User created successfully",
-        user:  _.pick(newUser, ['email', 'isAdmin' ])
+        user:  _.pick(newUser, ['email', 'isAdmin', 'userRole' ])
     });    
 }
 
@@ -121,15 +131,17 @@ const resetPassword = async(req, res) => {
     if (emailExists) throw new BadUserRequestError("Error: An account with this email already exists");
 
     const role = req.body.role;
-    console.log(role)
+    
     const user = await User.findOne({email: req.body.email});
-    user.role = role;  //update role of staff in user database
-
-    if (role == "superAdmin" || role === "admin" || role === "bursar"){
+    if (!user) throw new NotFoundError("Error: staff is not registered")
+    user.userRole = role;  //update role of staff in user database
+    
+    if (role === "superadmin" || role === "admin" || role === "bursar"){
         req.body.isAdmin = true;
         user.isAdmin = true;  //change staff to admin in user database
     }
-    const bursarExists = await Staff.findOne({ stafferRole: "Bursar" });
+    user.save()
+    const bursarExists = await Staff.findOne({ role: "bursar" });
     if (bursarExists) throw new BadUserRequestError("Error: A bursar is already registered");
 
     const newStaffer = await Staff.create(req.body);
@@ -141,27 +153,7 @@ const resetPassword = async(req, res) => {
     })
     }
 
-    const addStudent = async(req,res) =>{
-        const {error} = addStudentValidator(req.body)
-        if(error) throw error
-       
-        const emailExists = await Student.findOne({ email: req.body.email });
-        if (emailExists) throw new BadUserRequestError("Error: An account with this email already exists");
-    
-        const role = req.body.role;
-        const user = await User.findOne({email: req.body.email});
-        user.userRole = role;  //update role of student in user database
-    
-        const newStudent = await Student.create(req.body);
-    
-        res.status(200).json({
-        status: "Success",
-        message: `Successfully added as ${role}`,
-        student:  newStudent
-        })
-        }
-      
 
 
 
-module.exports = {userSignUp, userLogIn,forgotPassword, resetPassword, addStaff, addStudent, portalRedirect}
+module.exports = {userSignUp, userLogIn,forgotPassword, resetPassword, addStaff, portalRedirect}

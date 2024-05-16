@@ -10,7 +10,7 @@ const {addStudent,
        = require('../controllers/studentController')
 
 
-router.route('/').post(addStudent).get(getOneStudent)
+router.route('/registerStudent').post(addStudent).get(getOneStudent)
 router.route('/:page').get(getStudents)
 router.route('/all/:page').get(getAllStudents)
 router.route('/').delete(deleteStudent)

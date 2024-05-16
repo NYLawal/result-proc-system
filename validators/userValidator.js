@@ -140,10 +140,9 @@ function addStaffValidator(staffer){
       )
     ),
     teacherClass:Joi.string()
-    .required()
     .error(
       new ValidationError(
-        "Staffer must have a class"
+        "Teacher must have a class"
       )
     ),
     role:Joi.string()

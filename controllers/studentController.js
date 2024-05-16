@@ -1,5 +1,6 @@
 const dbDebugger = require("debug")("app:db");
 const Student = require("../models/studentModel");
+const User = require("../models/userModel");
 const {
   newStudentValidation,
   updateStudentValidation,
@@ -11,8 +12,12 @@ const classes = require("../models/classModel");
 const addStudent = async (req, res, next) => {
   const { error } = newStudentValidation(req.body);
   if (error) throw error;
+
+  const emailExists = await Student.findOne({ email: req.body.email });
+  if (emailExists) throw new BadUserRequestError("Error: An account with this email already exists");
+
   const student = await Student.create(req.body);
-  res.status(201).json({ status: "success", student, msg: "student added successfully" });
+  res.status(201).json({ status: "success", student, message: "Student added successfully" });
 };
 
 const getStudents = async (req, res, next) => {

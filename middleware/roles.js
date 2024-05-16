@@ -7,18 +7,19 @@ function superAdmin(req,res,next){
 }
 
 function admin(req,res,next){
-    if (!req.user.isAdmin) throw new AccessDeniedError("Error: Access Denied!")
+    const role = req.user.role
+    if (role !== 'admin') throw new AccessDeniedError("Error: You are not authorised to perform this action!")
     next()
 }
 
-function isStudent(req,res,next){
+function student(req,res,next){
     const role = req.user.role
     if (role !== "student") throw new AccessDeniedError("Error: You do not have access to this resource")
     next()
 }
 
 
-module.exports = {admin, superAdmin, isStudent}
+module.exports = {admin, superAdmin, student}
 
 // function authRole(role) {
 //     return (req, res, next) => {

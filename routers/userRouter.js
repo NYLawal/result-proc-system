@@ -11,6 +11,7 @@ router.route('/login').post(userLogIn)
 router.post('/forgotPassword', forgotPassword)
 router.post('/password-reset/:userId/:token', resetPassword)
 router.post('/addStaff', [authenticateUser, superAdmin], addStaff)
+router.post('/registerStudent', [authenticateUser, admin], addStudent)
 router.get('/authorise', authenticateUser, portalRedirect)
 
 
