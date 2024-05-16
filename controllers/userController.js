@@ -121,10 +121,11 @@ const resetPassword = async(req, res) => {
     if (emailExists) throw new BadUserRequestError("Error: An account with this email already exists");
 
     const role = req.body.stafferRole;
+    console.log(role)
     const user = await User.findOne({email: req.body.email});
-    user.userRole = role;  //update role of staff in user database
+    user.role = role;  //update role of staff in user database
 
-    if (role == "SuperAdmin" || role === "Admin" || role === "Bursar"){
+    if (role == "superAdmin" || role === "admin" || role === "bursar"){
         req.body.isAdmin = true;
         user.isAdmin = true;  //change staff to admin in user database
     }
