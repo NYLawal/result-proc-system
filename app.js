@@ -12,6 +12,7 @@ const studentRouter = require('./routers/studentRouter');
 const scoreRouter = require('./routers/scoreRouter');
 const homeRouter = require('./routers/homeRouter');
 const userRouter = require('./routers/userRouter');
+const staffRouter = require('./routers/staffRouter');
 const errorHandler= require('./middleware/errorHandler')
 const morgan = require('morgan')
 const express = require('express');
@@ -45,6 +46,7 @@ app.options('*', cors())
 app.use('/', homeRouter )
 app.use('/api/v1/user', userRouter )
 app.use('/api/v1/student', studentRouter )
+app.use('/api/v1/staff', staffRouter )
 app.use(errorHandler)
 
  const port = process.env.PORT || 5000
@@ -54,7 +56,7 @@ async function start(){
         if (success) console.log('connected')
         app.listen(port, startupDebugger(`server listening on port ${port}`))
     } catch (error) {
-        startupDebugger(error)
+        console.log(error)
     }
 }
 start()

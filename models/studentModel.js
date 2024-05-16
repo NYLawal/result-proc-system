@@ -8,7 +8,7 @@ const studentSchema = new mongoose.Schema({
     unique: true,
     trim: true,
     maxlength: [10, "maximum characters for admission number is 10"],
-    match: [/^RSM+[0-9]{1,4}/, "invalid admission number"],
+    match: [/^MDRS+[0-9]{1,4}/, "invalid admission number"],
   },
 
   firstName: {
@@ -57,9 +57,7 @@ const studentSchema = new mongoose.Schema({
 
   phoneNumber: {
     type: String,
-    required: [true, "contact cannot be empty"],
-    minlength: [10, "incorrect number of digits for phone mumber"],
-    maxlength: [11, "incorrect number of digits for phone mumber"],
+    required: [true, "contact number cannot be empty"]
   },
 
   email: {
@@ -121,7 +119,6 @@ const studentSchema = new mongoose.Schema({
 
   presentClass: {
     type: String,
-    required: [true, "present class cannot be empty"],
     enum: {
       values: ["tamyidi", "rawdoh", "adonah", "awwal ibtidaahi", "thaani ibtidaahi", "thaalith ibtidaahi", "roobi ibtidaahi", 
       "khamis ibtidaahi", "awwal idaadi", "thaani idaadi", "thaalith idaadi"],
@@ -158,10 +155,13 @@ const studentSchema = new mongoose.Schema({
   // scores:{
   //     type: scoreSchema,
   //     required:true
-  // },
-
- 
+  // }, 
 });
+
+studentSchema.pre("save", function(){
+  this.presentClass = this.entryClass
+})
+
 const Student = mongoose.model("Student", studentSchema);
 
 module.exports = Student;

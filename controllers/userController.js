@@ -15,7 +15,6 @@ const {
     userLogInValidator,
     forgotPasswordValidator,
     resetPasswordValidator,
-    addStaffValidator
 } = require("../validators/userValidator");
 const SENDMAIL = require('../utils/mailHandler');
 
@@ -36,11 +35,10 @@ const userSignUp = async (req, res, next) => {
     if (isParent){
          req.body.userRole = "parent";
     }
-
-    // const user = req.body
+    
     const newUser = await User.create(req.body);
     const token = newUser.generateToken()
-    res.header('access_token', access_token).status(201).json({
+    res.header('token', token).status(201).json({
         status: "Success",
         message: "User created successfully",
         user:  _.pick(newUser, ['email', 'isAdmin', 'userRole' ])
@@ -123,37 +121,9 @@ const resetPassword = async(req, res) => {
     })
     }
 
-  const addStaff = async(req,res) =>{
-    const {error} = addStaffValidator(req.body)
-    if(error) throw error
-   
-    const emailExists = await Staff.findOne({ email: req.body.email });
-    if (emailExists) throw new BadUserRequestError("Error: An account with this email already exists");
-
-    const role = req.body.role;
-    
-    const user = await User.findOne({email: req.body.email});
-    if (!user) throw new NotFoundError("Error: staff is not registered")
-    user.userRole = role;  //update role of staff in user database
-    
-    if (role === "superadmin" || role === "admin" || role === "bursar"){
-        req.body.isAdmin = true;
-        user.isAdmin = true;  //change staff to admin in user database
-    }
-    user.save()
-    const bursarExists = await Staff.findOne({ role: "bursar" });
-    if (bursarExists) throw new BadUserRequestError("Error: A bursar is already registered");
-
-    const newStaffer = await Staff.create(req.body);
-
-    res.status(200).json({
-    status: "Success",
-    message: `Successfully added as ${role}`,
-    staffer:  _.pick(newStaffer, ['stafferName', 'email', 'stafferRole', 'isAdmin' ])
-    })
-    }
+  
 
 
 
 
-module.exports = {userSignUp, userLogIn,forgotPassword, resetPassword, addStaff, portalRedirect}
+module.exports = {userSignUp, userLogIn,forgotPassword, resetPassword, portalRedirect}

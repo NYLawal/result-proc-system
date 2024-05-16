@@ -6,6 +6,9 @@ const {
   updateStudentValidation,
 } = require("../validators/studentValidator");
 
+const  { MailNotSentError, BadUserRequestError, NotFoundError, UnAuthorizedError } = 
+require('../middleware/errors')
+
 const classes = require("../models/classModel");
 // const asyncWrapper = require('../middleware/async')
 
@@ -15,6 +18,9 @@ const addStudent = async (req, res, next) => {
 
   const emailExists = await Student.findOne({ email: req.body.email });
   if (emailExists) throw new BadUserRequestError("Error: An account with this email already exists");
+
+  const admnoExists = await Student.findOne({ admNo: req.body.admNo });
+  if (admnoExists) throw new BadUserRequestError("Error: A student with this admission number already exists");
 
   const student = await Student.create(req.body);
   res.status(201).json({ status: "success", student, message: "Student added successfully" });

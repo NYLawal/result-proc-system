@@ -7,8 +7,8 @@ function superAdmin(req,res,next){
 }
 
 function admin(req,res,next){
-    const role = req.user.role
-    if (role !== 'admin') throw new AccessDeniedError("Error: You are not authorised to perform this action!")
+    const administrator = req.user.isAdmin
+    if (!administrator) throw new AccessDeniedError("Error: You are not authorised to perform this action!")
     next()
 }
 

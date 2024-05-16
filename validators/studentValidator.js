@@ -8,7 +8,7 @@ function newStudentValidation(student) {
   const schema = Joi.object({
     admNo: Joi.string()
       .required()
-      .regex(/^RSM+[0-9]{1,4}/)
+      .regex(/^MDRS+[0-9]{1,4}/)
       .messages({ "string.pattern.base": "invalid admission number" }),
     firstName: Joi.string()
       .required()
@@ -66,7 +66,7 @@ function newStudentValidation(student) {
     maritalStatus: Joi.string().required(),
     studentStatus: Joi.string(),
     nonStudentStatus: Joi.string(),
-    presentClass: Joi.string().required(),
+    presentClass: Joi.string(),
     classStatus: Joi.string(),
     paymentStatus: Joi.string(),
   }).strict();
