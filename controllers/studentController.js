@@ -15,11 +15,13 @@ const classes = require("../models/classModel");
 const addStudent = async (req, res, next) => {
   const { error } = newStudentValidation(req.body);
   if (error) throw error;
-
+ console.log(req.body.email)
+  if (req.body.email !== "nothing@nil.com"){
   const emailExists = await Student.findOne({ email: req.body.email });
   if (emailExists) throw new BadUserRequestError("Error: An account with this email already exists");
-
+  }
   const admnoExists = await Student.findOne({ admNo: req.body.admNo });
+  console.log(admnoExists)
   if (admnoExists) throw new BadUserRequestError("Error: A student with this admission number already exists");
 
   const student = await Student.create(req.body);

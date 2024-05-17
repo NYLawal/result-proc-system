@@ -5,7 +5,6 @@ const studentSchema = new mongoose.Schema({
   admNo: {
     type: String,
     required: [true, "admission number cannot be empty"],
-    unique: true,
     trim: true,
     maxlength: [10, "maximum characters for admission number is 10"],
     match: [/^MDRS+[0-9]{1,4}/, "invalid admission number"],
