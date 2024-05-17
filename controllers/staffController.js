@@ -23,14 +23,11 @@ const addStaff = async(req,res) =>{
 
     const role = req.body.role;
     let isAdmin = false;
-    // const user = await User.findOne({email: req.body.email});
-    // if (!user) throw new NotFoundError("Error: staff is not registered")
-    // user.userRole = role;  //update role of staff in user database
+    
     if (role === "bursar"){
       const bursarExists = await Staff.findOne({ role: "bursar" });
       if (bursarExists) throw new BadUserRequestError("Error: A bursar is already registered");
       }
-    
     if (role === "superadmin" || role === "admin" || role === "bursar"){
         req.body.isAdmin = true;
         isAdmin = true;
@@ -51,14 +48,27 @@ const addStaff = async(req,res) =>{
     const getStaff = async (req, res, next) => {
         const staff = await Staff.find({})
           .sort({ role: 1 })
+          .select('_id stafferName email gender address phoneNumber role isAdmin')
       
         if (!staff) return next(new Error("Error: no staff found"));
         res.status(200).json({ 
         status: "Success", 
-        staff_list: _.pick(staff, ['_id','stafferName','email','gender','address','phoneNumber','role','isAdmin' ]), 
-        noOfStudents: staff.length });
+        staff_list: staff,
+        noOfStaff: staff.length });
+      };
+
+    const getTeachers = async (req, res, next) => {
+        const teachers = await Staff.find({role:"teacher"})
+          .sort({ stafferName: 1 })
+          .select('_id stafferName email gender address phoneNumber role isAdmin teacherClass')
+      
+        if (!teachers) return next(new Error("Error: no teachers found"));
+        res.status(200).json({ 
+        status: "Success", 
+        teachers_list: teachers,
+        noOfStaff: teachers.length });
       };
 
       
 
-    module.exports = {addStaff, getStaff}
+    module.exports = {addStaff, getStaff, getTeachers}

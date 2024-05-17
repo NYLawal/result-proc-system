@@ -43,7 +43,7 @@ function userSignUpValidator(user) {
         .email()
         .error(
           new ValidationError(
-            "Please input a valid email"
+            "Invalid email or password"
           )
         ),
         password: Joi.string()
@@ -52,7 +52,7 @@ function userSignUpValidator(user) {
         .max(25)
         .error(
           new ValidationError(
-            "Input a valid password"
+            "Invalid email or password"
           )
         )
     }).strict();

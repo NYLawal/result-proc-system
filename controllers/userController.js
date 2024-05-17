@@ -57,10 +57,10 @@ const userLogIn = async (req, res, next) => {
     if (error) throw error
     
     const user = await User.findOne({ email: req.body.email });
-    if (!user) throw new UnAuthorizedError("Error: invalid email");
+    if (!user) throw new UnAuthorizedError("Error: invalid email or password");
 
     const isValidPassword = await user.comparePassword(req.body.password)
-    if (!isValidPassword) throw new UnAuthorizedError("Error: invalid password");
+    if (!isValidPassword) throw new UnAuthorizedError("Error: invalid email or password");
 
     const access_token = user.generateToken()
     res.header('access_token', access_token).status(200).json({
