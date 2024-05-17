@@ -55,34 +55,23 @@ const staffSchema = new mongoose.Schema(
         type: Boolean,
         default: false
     },
-    // history: {
-    //   type: Array,
-    //   default: [],
-    // },
   },
   { timestamps: true }
 );
 
-// staffSchema.pre('save', async function() {
-//  const salt = await bcrypt.genSalt(10)
-//  this.password = await bcrypt.hash(this.password, salt)
-// })
 
-staffSchema.methods.generateToken = function(){
-  const payload = {
-    _id: this._id,
-    email: this.email,
-    role: this.stafferRole,
-    isAdmin: this.isAdmin
-  }
-  const token = jwt.sign(payload, process.env.jwt_secret_key, { expiresIn: process.env.jwt_lifetime });
-  return token 
-}
 
-// staffSchema.methods.comparePassword = async function(stafferPassword){
-//   const isMatch = await bcrypt.compare(stafferPassword, this.password)
-//   return isMatch
+// staffSchema.methods.generateToken = function(){
+//   const payload = {
+//     _id: this._id,
+//     email: this.email,
+//     role: this.stafferRole,
+//     isAdmin: this.isAdmin
+//   }
+//   const token = jwt.sign(payload, process.env.jwt_secret_key, { expiresIn: process.env.jwt_lifetime });
+//   return token 
 // }
+
 
 const Staff = mongoose.model("Staff", staffSchema);
 module.exports = Staff;

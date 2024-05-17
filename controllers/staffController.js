@@ -22,19 +22,22 @@ const addStaff = async(req,res) =>{
     if (emailExists) throw new BadUserRequestError("Error: An account with this email already exists");
 
     const role = req.body.role;
-    
-    const user = await User.findOne({email: req.body.email});
-    if (!user) throw new NotFoundError("Error: staff is not registered")
-    user.userRole = role;  //update role of staff in user database
+    let isAdmin = false;
+    // const user = await User.findOne({email: req.body.email});
+    // if (!user) throw new NotFoundError("Error: staff is not registered")
+    // user.userRole = role;  //update role of staff in user database
+    if (role === "bursar"){
+      const bursarExists = await Staff.findOne({ role: "bursar" });
+      if (bursarExists) throw new BadUserRequestError("Error: A bursar is already registered");
+      }
     
     if (role === "superadmin" || role === "admin" || role === "bursar"){
         req.body.isAdmin = true;
-        user.isAdmin = true;  //change staff to admin in user database
+        isAdmin = true;
     }
-    user.save()
-    const bursarExists = await Staff.findOne({ role: "bursar" });
-    if (bursarExists) throw new BadUserRequestError("Error: A bursar is already registered");
-
+    const user = await User.findOneAndUpdate({ email:req.body.email }, {userRole:role, isAdmin}, {
+      new: true,
+    });
     const newStaffer = await Staff.create(req.body);
 
     res.status(200).json({

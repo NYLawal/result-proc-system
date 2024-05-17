@@ -35,6 +35,12 @@ const userSignUp = async (req, res, next) => {
     if (isParent){
          req.body.userRole = "parent";
     }
+
+    const isStaff = await Staff.findOne({ email: req.body.email });
+    if (isStaff){
+         req.body.userRole = isStaff.role;
+         req.body.isAdmin = isStaff.isAdmin;
+    }
     
     const newUser = await User.create(req.body);
     const token = newUser.generateToken()
@@ -51,10 +57,10 @@ const userLogIn = async (req, res, next) => {
     if (error) throw error
     
     const user = await User.findOne({ email: req.body.email });
-    if (!user) throw new UnAuthorizedError("Error: invalid email or password");
+    if (!user) throw new UnAuthorizedError("Error: invalid email");
 
     const isValidPassword = await user.comparePassword(req.body.password)
-    if (!isValidPassword) throw new UnAuthorizedError("Error: invalid email or password");
+    if (!isValidPassword) throw new UnAuthorizedError("Error: invalid password");
 
     const access_token = user.generateToken()
     res.header('access_token', access_token).status(200).json({
