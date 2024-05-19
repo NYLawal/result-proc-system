@@ -13,8 +13,8 @@ const {admin} = require('../middleware/roles')
 
 
 router.route('/registerStudent').post([authenticateUser, admin], addStudent).get(getOneStudent)
-router.route('/all').get(getAllStudents)
-router.route('/').get(getStudents)
+router.route('/all').get([authenticateUser, admin], getAllStudents)
+router.route('/').get([authenticateUser, admin], getStudents)
 router.route('/').delete(deleteStudent)
 router.route('/').patch(updateStudent)
 
