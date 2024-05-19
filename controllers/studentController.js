@@ -15,7 +15,7 @@ const classes = require("../models/classModel");
 const addStudent = async (req, res, next) => {
   const { error } = newStudentValidation(req.body);
   if (error) throw error;
- console.log(req.body.email)
+ 
   if (req.body.email !== "nothing@nil.com"){
   const emailExists = await Student.findOne({ email: req.body.email });
   if (emailExists) throw new BadUserRequestError("Error: An account with this email already exists");
@@ -31,9 +31,11 @@ const addStudent = async (req, res, next) => {
 const getStudents = async (req, res, next) => {
   const pageNumber = req.params.page;
   const pageSize = 5;
+  let queryObject = req.query;
+  console.log(queryObject)
 
-  const { firstName, lastName, age, gender, address, status } = req.query;
-  let queryObject = {};
+  const { firstName, lastName, gender, address, entryClass, stateOfOrigin, maritalStatus, programme, presentClass, classStatus, studentStatus } = req.query;
+  // let queryObject = {};
 
   if (firstName) {
     queryObject.firstName = { $regex: firstName, $options: "i" };
@@ -41,8 +43,8 @@ const getStudents = async (req, res, next) => {
   if (lastName) {
     queryObject.lastName = { $regex: lastName, $options: "i" };
   }
-  if (age) {
-    queryObject.age = age;
+  if (entryClass) {
+    queryObject.entryClass =  entryClass;
   }
   if (gender) {
     queryObject.gender = gender;
@@ -50,23 +52,46 @@ const getStudents = async (req, res, next) => {
   if (address) {
     queryObject.address = { $regex: address, $options: "i" };
   }
-  if (status) {
-    queryObject.status = status;
+  if (stateOfOrigin) {
+    queryObject.stateOfOrigin = { $regex: stateOfOrigin, $options: "i" };
+  }
+  if (maritalStatus) {
+    queryObject.maritalStatus = maritalStatus;
+  }
+  if (presentClass) {
+    queryObject.presentClass =  presentClass;
+  }
+  if (programme) {
+    queryObject.programme = programme;
+  }
+  if (classStatus) {
+    queryObject.classStatus = classStatus;
+  }
+  if (studentStatus) {
+    queryObject.studentStatus = studentStatus;
   }
   if (Object.keys(queryObject).length === 0)
     return next(new Error("Error: no such criteria exists"));
 
   const students = await Student.find(queryObject)
-    .sort({ firstName: 1 })
+    .sort({ admNo: 1 })
     .skip((pageNumber - 1) * pageSize)
     .limit(pageSize);
 
   if (students.length == 0)
     return next(new Error("Error: no such students found"));
 
+  // for (let i=0; i<students.length; i++){
+  //   let dateOfReg = students[i].registeredOn
+  //   let dateonly = dateOfReg.substring(0,10);
+  //   // let date = dateOfReg.split('T')[0]
+    
+  //   console.log(dateonly)
+  //   students[i].registeredOn = dateonly
+  // }
   res
     .status(200)
-    .json({ status: "success", students, noOfStudents: students.length });
+    .json({ status: "Success", students, noOfStudents: students.length });
 };
 
 const getOneStudent = async (req, res, next) => {
@@ -78,11 +103,11 @@ const getOneStudent = async (req, res, next) => {
 };
 
 const getAllStudents = async (req, res, next) => {
-  const pageNumber = req.params.page;
-  const pageSize = 5;
+  const pageNumber = req.params.page || 1;
+  const pageSize = 15;
 
-  const students = await Student.find({})
-    .sort({ firstName: 1 })
+  const students = await Student.find({studentStatus:"current"})
+    .sort({ admNo: 1 })
     .skip((pageNumber - 1) * pageSize)
     .limit(pageSize);
 

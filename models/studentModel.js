@@ -47,7 +47,7 @@ const studentSchema = new mongoose.Schema({
 
   address: {
     type: String,
-    required: [true, "address cannot be empty"],
+    required: [true, "input a valid address"],
     minlength: [
       20,
       "too short for a proper address, please input the correct one",
@@ -88,6 +88,17 @@ const studentSchema = new mongoose.Schema({
       message: "{VALUE} is not supported, status can either be single or married",
     },
     default: "single",
+    lowercase: true,
+  },
+
+  programme: {
+    type: String,
+    required: [true, "programme cannot be empty"],
+    enum: {
+      values: ["children madrasah", "adult madrasah", "female madrasah", "barnomij"],
+      message: "{VALUE} is not supported, status can either be single or married",
+    },
+    default: "children madrasah",
     lowercase: true,
   },
 
