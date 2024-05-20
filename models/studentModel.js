@@ -162,6 +162,14 @@ const studentSchema = new mongoose.Schema({
     default: "student",
     lowercase: true,
   },
+
+  dateOfRegistration: {
+    type: String
+  },
+
+  serialNo: {
+    type: Number
+  },
   // scores:{
   //     type: scoreSchema,
   //     required:true

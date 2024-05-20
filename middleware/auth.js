@@ -16,7 +16,7 @@ const { UnAuthorizedError, BadUserRequestError } = require('./errors');
   }
   catch (err){
     console.log(err)
-    throw new UnAuthorizedError("Error: unauthorised access!");
+    throw new UnAuthorizedError("Error: unauthorised access! Log in to resume your tasks");
   }
 } 
 module.exports = authenticateUser

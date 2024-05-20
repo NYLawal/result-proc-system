@@ -28,15 +28,28 @@ const addStudent = async (req, res, next) => {
   res.status(201).json({ status: "success", student, message: "Student added successfully" });
 };
 
+// check if page returned is the last
+function getEndOfPage(studNum, pgSize){
+  let lastpage;
+  const wholediv =  Math.floor(studNum / pgSize) ;
+  const modulus =  studNum % pgSize ;
+  if (modulus == 0) lastpage = wholediv;
+  else lastpage = wholediv+1;
+  // console.log(lastpage)
+  return lastpage
+}
+
 const getStudents = async (req, res, next) => {
-  const pageNumber = req.params.page;
+  let pageNumber = +req.params.page || 1;
   const pageSize = 5;
   let queryObject = req.query;
-  console.log(queryObject)
 
-  const { firstName, lastName, gender, address, entryClass, stateOfOrigin, maritalStatus, programme, presentClass, classStatus, studentStatus } = req.query;
+  const { admNo, firstName, lastName, gender, address, entryClass, stateOfOrigin, maritalStatus, programme, presentClass, classStatus, studentStatus } = req.query;
   // let queryObject = {};
 
+  if (admNo) {
+    queryObject.admNo = admNo;
+  }
   if (firstName) {
     queryObject.firstName = { $regex: firstName, $options: "i" };
   }
@@ -74,25 +87,30 @@ const getStudents = async (req, res, next) => {
     return next(new Error("Error: no such criteria exists"));
 
   const students = await Student.find(queryObject)
+  const noOfStudents = students.length;
+  const studentsperpage = await Student.find(queryObject)
     .sort({ admNo: 1 })
     .skip((pageNumber - 1) * pageSize)
     .limit(pageSize);
-
-  if (students.length == 0)
-    return next(new Error("Error: no such students found"));
-
-  // for (let i=0; i<students.length; i++){
-  //   let dateOfReg = students[i].registeredOn
-  //   let dateonly = dateOfReg.substring(0,10);
-  //   // let date = dateOfReg.split('T')[0]
     
-  //   console.log(dateonly)
-  //   students[i].registeredOn = dateonly
-  // }
+    if (students.length == 0)
+      return next(new Error("Error: no such students found"));
+    
+    const pgnum = getEndOfPage(noOfStudents, pageSize)
+
+  for (let i=0; i<studentsperpage.length; i++){
+    let date = studentsperpage[i].registeredOn.toString()
+    let dateonly = date.split(' ')
+    studentsperpage[i].dateOfRegistration = dateonly[0] + " " + dateonly[1]  + " " + dateonly[2]  + " " + dateonly[3]
+  
+    let serialno= (pageSize*pageNumber)-(pageSize-(i+1))
+    studentsperpage[i].serialNo=serialno;
+  }
   res
     .status(200)
-    .json({ status: "Success", students, noOfStudents: students.length });
+    .json({ status: "Success", studentsperpage, noOfStudents, page:pageNumber, pgnum });
 };
+
 
 const getOneStudent = async (req, res, next) => {
   const { admNo } = req.query;
@@ -102,18 +120,33 @@ const getOneStudent = async (req, res, next) => {
   res.status(200).json({ status: "success", student, msg: "student found!" });
 };
 
-const getAllStudents = async (req, res, next) => {
-  const pageNumber = req.params.page || 1;
-  const pageSize = 15;
 
+const getAllStudents = async (req, res, next) => {
+  let pageNumber = +req.params.page || 1
+  const pageSize = 5;
+ 
   const students = await Student.find({studentStatus:"current"})
+  const noOfStudents = students.length;
+  
+  const studentsperpage = await Student.find({studentStatus:"current"})
     .sort({ admNo: 1 })
     .skip((pageNumber - 1) * pageSize)
     .limit(pageSize);
 
+  const pgnum = getEndOfPage(noOfStudents, pageSize)
   if (!students) return next(new Error("Error: no students found"));
-  res.status(200).json({ status: "success", students, noOfStudents: students.length });
+
+  for (let i=0; i<studentsperpage.length; i++){
+    let date = studentsperpage[i].registeredOn.toString()
+    let dateonly = date.split(' ')
+    studentsperpage[i].dateOfRegistration = dateonly[0] + " " + dateonly[1]  + " " + dateonly[2]  + " " + dateonly[3]
+    
+    let serialno= (pageSize*pageNumber)-(pageSize-(i+1))
+    studentsperpage[i].serialNo=serialno;
+  }
+  res.status(200).json({ status: "success", studentsperpage, noOfStudents, page:pageNumber, pgnum });
 };
+
 
 const updateStudent = async (req, res, next) => {
   const { error } = updateStudentValidation(req.body);
