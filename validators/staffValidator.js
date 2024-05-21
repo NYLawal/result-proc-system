@@ -134,5 +134,21 @@ function addStaffValidator(staffer){
         
         return schema.validate(staffer);
         }
+
+
+        function deleteStaffValidator(staffer){
+          const schema = Joi.object({
+            email:Joi.string()
+            .required()
+            .email()
+            .error(
+              new ValidationError(
+                " Staffer email is required for the query"
+              )
+            ),
+          }).strict()
+        
+          return schema.validate(staffer);
+          }
   
-    module.exports = { addStaffValidator, editStaffQueryValidator, updateStaffValidator };
+    module.exports = { addStaffValidator, editStaffQueryValidator, updateStaffValidator, deleteStaffValidator };

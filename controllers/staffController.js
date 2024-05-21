@@ -12,7 +12,8 @@ const Token = require('../models/tokenModel')
 const {
   addStaffValidator,
   editStaffQueryValidator,
-  updateStaffValidator
+  updateStaffValidator,
+  deleteStaffValidator
 } = require("../validators/staffValidator");
 
 
@@ -107,5 +108,15 @@ const updateStaff = async (req, res, next) => {
 };
 
 
+const deleteStaff = async (req, res, next) => {
+  const { error } = deleteStaffValidator(req.body);
+  if (error) throw error;
+  
+  let { email } = req.body;
+  const staff = await Staff.findOneAndDelete({ email });
+  if (!staff) return next(new Error("Error: no such staff found"));
 
-module.exports = { addStaff, getStaff, getTeachers, editStaffQuery, updateStaff }
+  res.status(200).json({ status: "success", message: "Staff has been deleted" });
+};
+
+module.exports = { addStaff, getStaff, getTeachers, editStaffQuery, updateStaff, deleteStaff }

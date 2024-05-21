@@ -4,6 +4,7 @@ const User = require("../models/userModel");
 const {
   newStudentValidation,
   updateStudentValidation,
+  editStudentValidation
 } = require("../validators/studentValidator");
 
 const  { MailNotSentError, BadUserRequestError, NotFoundError, UnAuthorizedError } = 
@@ -148,20 +149,33 @@ const getAllStudents = async (req, res, next) => {
 };
 
 
-const updateStudent = async (req, res, next) => {
-  const { error } = updateStudentValidation(req.body);
+const editStudent = async (req, res, next) => {
+  const { error } = editStudentValidation(req.body);
   if (error) throw error;
 
-  let { admNo } = req.query;
-  const student = await Student.findOneAndUpdate({ admNo }, req.body, {
-    new: true,
-  });
+  let { admNo } = req.body;
+  const student = await Student.findOne({ admNo })
   if (!student) return next(new Error("Error: no such student found"));
 
   res
     .status(200)
-    .json({ status: "success", msg: "user updated successfully", student });
+    .json({ status: "success", message: "Student found", student });
 };
+
+
+const updateStudent = async (req, res, next) => {
+  const { error } = updateStudentValidation(req.body);
+  if (error) throw error;
+
+  let { admNo } = req.body;
+  const student = await Student.findOneAndUpdate({ admNo }, req.body, {new:true})
+  if (!student) return next(new Error("Error: no such student found"));
+
+  res
+    .status(200)
+    .json({ status: "success", message: "Student information is up-to-date", student });
+};
+
 
 const deleteStudent = async (req, res, next) => {
   let { admNo } = req.query;
@@ -178,8 +192,9 @@ module.exports = {
   getStudents,
   getOneStudent,
   getAllStudents,
-  deleteStudent,
+  editStudent,
   updateStudent,
+  deleteStudent,
 };
 
 // *******************************************************************************************************************

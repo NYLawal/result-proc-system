@@ -2,21 +2,22 @@ const express = require('express');
 const router = express.Router();
 const {addStudent,
        getStudents,
-       getOneStudent,
        getAllStudents,
-       deleteStudent,
+       editStudent,
        updateStudent,
+       deleteStudent
        } 
        = require('../controllers/studentController')
 const authenticateUser = require('../middleware/auth')
 const {admin} = require('../middleware/roles')
 
 
-router.route('/registerStudent').post([authenticateUser, admin], addStudent).get(getOneStudent)
+router.route('/registerStudent').post([authenticateUser, admin], addStudent)
 router.route('/all/:page').get([authenticateUser, admin], getAllStudents)
 router.route('/:page').get([authenticateUser, admin], getStudents)
+router.route('/editStudent').post([authenticateUser, admin], editStudent)
+router.route('/updateStudent').patch([authenticateUser, admin], updateStudent)
 router.route('/').delete(deleteStudent)
-router.route('/').patch(updateStudent)
 
 
 module.exports = router;
