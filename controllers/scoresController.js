@@ -4,83 +4,41 @@ const Score = require("../models/scoreModel");
 const { MailNotSentError, BadUserRequestError, NotFoundError, UnAuthorizedError } =
   require('../middleware/errors')
 const {
-  addScoresValidation
+  addScoresValidation,
+  addCommentValidation
 } = require("../validators/scoresValidator");
 const { addStudent } = require("./studentController");
 
 
-// const addScores = async (req, res, next) => {
-//   const { error } = addScoresValidation(req.body);
-//   if (error) throw error;
 
-//   const { admNo} = req.query;
+const addTermComment = async (req, res, next) => {
+   const { error } = addCommentValidation(req.body);
+  if (error) throw error;
 
-//   // check whether details match any student of the school
-//   const isStudent = await Student.findOne({ admNo }).select("admNo");
-
-//   if (!isStudent) {
-//     return next(new Error("Error: No student with this admission number exists"));
-//   }
-//   // dbDebugger(isStudent._id)
-
-//   // check whether student exists in the scores database
-//   //if not, create a document for the student and push scores
-//   const alreadyHasScores = await Score.findOne({ studentId: isStudent._id })
-//   if (!alreadyHasScores) {
-//     const addStudent = await Score.create({ ...req.body, studentId: isStudent._id, admissionNumber: isStudent.admNo, student_name: isStudent.firstName + " " + isStudent.lastName });
-//     addStudent.scores.push(req.body)
-//     addStudent.scores[0].subjects.push(req.body.subject)
-//     addStudent.save()
-//     dbDebugger("after save")
-//     res.status(201).json({ status: "success", addStudent, msg: "student created and scores added successfully" });
-//   }
-//   else {// if yes, check whether student has the subject's scores for the session and term specified, display error if there is
-//     for (let scorescount = 0; scorescount < alreadyHasScores.scores.length; scorescount++) {
-//       if (req.body.session === alreadyHasScores.scores[scorescount].session && req.body.term === alreadyHasScores.scores[scorescount].term) {
-//         for (let subjectcount = 0; subjectcount < alreadyHasScores.scores[scorescount].subjects.length; subjectcount++) {
-//           if (req.body.subject.subjectName === alreadyHasScores.scores[scorescount].subjects[subjectcount].subjectName) {
-//               dbDebugger(" subject match found ")
-//               return next(new Error(`Error: ${req.body.subject.subjectName} score for this term already exists for the student`));
-//             }
-//           } // if score doesn't exist add score for the subject 
-//             alreadyHasScores.scores[scorescount].subjects.push(req.body.subject)
-//             alreadyHasScores.save()
-//             res.status(201).json({ status: "success", msg: `${req.body.subject.subjectName} scores for this student added successfully`});
-//           return
-//       }
-//     } // if no match is found for the session and term, add score to the new session and term
-//     alreadyHasScores.scores.push(req.body)
-//     const arrayLength = alreadyHasScores.scores.length
-//     alreadyHasScores.scores[arrayLength-1].subjects.push(req.body.subject)
-//     alreadyHasScores.save()
-//     res.status(201).json({ status: "success", msg: 'scores for this term added successfully for student'});
-//   }
-//     // if not, push the scores into the array of student's scores
-
-// }
-
-
-const createStudentScores = async (req, res, next) => {
-  const { admNo } = req.query;
+  const { admNo} = req.query;
+  const {comment, sessionName, className, termName } = req.body
 
   // check whether details match any student of the school
   const isStudent = await Student.findOne({ admNo });
   if (!isStudent) {
     throw new BadUserRequestError("Error: No student with this admission number exists");
   }
+ const toaddcomment = await Score.findOne({admissionNumber:admNo})
+  if (!toaddcomment) throw new NotFoundError("Error: Student not found!");
 
-  // check whether student exists in the scores database
-  //if not, create a document for the student and push scores
-  const alreadyHasScores = await Score.findOne({ studentId: isStudent._id })
-  if (!alreadyHasScores) {
-    const addStudent = await Score.create({ ...req.body, studentId: isStudent._id, admissionNumber: isStudent.admNo, student_name: isStudent.firstName + " " + isStudent.lastName });
-    addStudent.scores.push(req.body)
-    addStudent.save()
-
-    res.status(201).json({ status: "success", addStudent, message: "Student created successfully. You can begin to add scores" });
+  for(let count = 0; count < toaddcomment.scores.length; count++){
+    if (toaddcomment.scores[count].sessionName == sessionName && toaddcomment.scores[count].className == className){
+      for (let termcount = 0; termcount < toaddcomment.scores[count].term.length; termcount++) {
+        if (toaddcomment.scores[count].term[termcount].termName == termName) {
+          toaddcomment.scores[count].term[termcount].comment = comment
+          toaddcomment.save()
+        }
+      }   
+    }  
   }
-
+    res.status(201).json({ status: "success", toaddcomment, message: "Comment added successfully" });
 }
+
 
 const addScores = async (req, res, next) => {
   // const { error } = addScoresValidation(req.body);
@@ -184,7 +142,7 @@ const promoteStudents = async (req, res, next) => {
 
 
 
-module.exports = { addScores, getScores, promoteStudents, createStudentScores }
+module.exports = { addScores, getScores, promoteStudents, addTermComment }
 
 
 // const addScores = async (req, res, next) => {
