@@ -47,6 +47,7 @@ app.use('/', homeRouter )
 app.use('/api/v1/staff', staffRouter )
 app.use('/api/v1/user', userRouter )
 app.use('/api/v1/student', studentRouter )
+app.use('/api/v1/scores', scoreRouter )
 app.use(errorHandler)
 
  const port = process.env.PORT || 5000

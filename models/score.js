@@ -7,25 +7,64 @@ const scoreSchema = new mongoose.Schema({
         ref: "Student",
         required: true,
       },
-    admissionNumber: String,
-    student_name: String,
-    scores:[{
-      sessionName: String,
-      className: String,
-      term: [{ 
-        termName: String,
-          subjects: [{
-            subjectName: String, 
-            testScore: Number, 
-            examScore: Number,
-            totalScore: Number, 
-            remark: String
-          }],
-          comment: String
-      }],
-      
-    }]
+    AdmissionNumber: String,
+    Name: String,
     
+    scores:[{
+    session:  {
+        type: String,
+        required: [true, "session cannot be empty"]
+    },
+    term:  {
+        type: String,
+        required: [true, "term cannot be empty"],
+        enum: {
+            values: ["first", "second", "third"],
+            message: "{VALUE} is not supported, input a valid term",
+          },
+          lowercase: true,
+    },
+    className: {
+        type: String,
+        required: [true, "present class cannot be empty"],
+        enum: {
+          values: ["tamyidi", "rawdoh", "adonah", "awwal ibtidahi", "thaani ibtidahi", "thaalith ibtidahi", "raabi ibtidahi", 
+          "khaamis ibtidahi", "awwal idaadi", "thaani idaadi", "thaalith idaadi"],
+          message: "{VALUE} is not supported, input a valid class",
+        },
+        lowercase: true,
+      },
+    subjects:[{
+         subjectName:{
+              type:String,
+              trim:true,
+              required: [true, "subject cannot be empty"],
+              enum: {
+                values: ["fiqh", "hadith", "tawheed", "tafseer", "tadribaatuLugha", "lugha", "imlah", "hifz", "tajweed", "tahbeer", 
+                "taajiyya", "qiraaha", "khatu", "adhkaar", "nahw", "sarf"],
+                message: "{VALUE} is not supported, input a valid subject",
+              },
+               },
+         testScore:{
+              type:Number,
+              trim:true,
+              required: [true, "test score cannot be empty"],
+               maxlength:[2, 'score cannot be more than 2 characters']
+               },
+         examScore:{
+              type:Number,
+              trim:true,
+              required: [true, "exam score cannot be empty"],
+               maxlength:[2, 'score cannot be more than 2 characters']
+               }
+    }],
+   
+    totalScore: Number,
+    avgPercent: Number,
+    position: Number,
+    teacherComment: String,
+    // teacherSignature:Image
+   }]
 })
 
 

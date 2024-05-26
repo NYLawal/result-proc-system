@@ -1,9 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const {addScores,getScores} 
+const {addScores, createStudentScores} 
        = require('../controllers/scoresController')
+const authenticateUser = require('../middleware/auth')
+const {admin} = require('../middleware/roles')
 
 
-router.route('/').post(addScores).get(getScores)
+router.route('/createScores').post(createStudentScores)
+router.route('/addScores').post([authenticateUser, teacher], addScores)
+// .get(getScores)
 
 module.exports = router;
