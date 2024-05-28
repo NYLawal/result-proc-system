@@ -1,6 +1,6 @@
 const dbDebugger = require("debug")("app:db");
 const Student = require("../models/studentModel");
-const User = require("../models/userModel");
+const Staff = require("../models/staffModel");
 const {
   newStudentValidation,
   updateStudentValidation,
@@ -112,6 +112,38 @@ const getStudents = async (req, res, next) => {
     .json({ status: "Success", studentsperpage, noOfStudents, page:pageNumber, pgnum });
 };
 
+const getStudentsByClass = async (req, res, next) => {
+  let pageNumber = +req.params.page || 1;
+  const pageSize = 5;
+
+  const teacher = await Staff.findOne({email:req.user.email})
+  const teacherClass = teacher.teacherClass
+  const teacherProgramme = teacher.teacherProgramme
+
+  const students = await Student.find({$and: [{presentClass:teacherClass}, {programme:teacherProgramme}]})
+  const noOfStudents = students.length;
+  const studentsperpage = await Student.find({$and: [{presentClass:teacherClass}, {programme:teacherProgramme}]})
+    .sort({ admNo: 1 })
+    .skip((pageNumber - 1) * pageSize)
+    .limit(pageSize);
+    
+    if (students.length == 0)
+      return next(new Error("Error: no such students found"));
+    
+    const pgnum = getEndOfPage(noOfStudents, pageSize)
+
+  for (let i=0; i<studentsperpage.length; i++){
+    // let date = studentsperpage[i].registeredOn.toString()
+    // let dateonly = date.split(' ')
+    // studentsperpage[i].dateOfRegistration = dateonly[0] + " " + dateonly[1]  + " " + dateonly[2]  + " " + dateonly[3]
+    let serialno= (pageSize*pageNumber)-(pageSize-(i+1))
+    studentsperpage[i].serialNo=serialno;
+  }
+  res
+    .status(200)
+    .json({ status: "Success", studentsperpage, noOfStudents, page:pageNumber, pgnum });
+};
+
 
 const getOneStudent = async (req, res, next) => {
   const { admNo } = req.query;
@@ -191,6 +223,7 @@ module.exports = {
   addStudent,
   getStudents,
   getOneStudent,
+  getStudentsByClass,
   getAllStudents,
   editStudent,
   updateStudent,

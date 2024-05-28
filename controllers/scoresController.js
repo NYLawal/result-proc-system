@@ -63,68 +63,92 @@ const addScores = async (req, res, next) => {
     addStudent.scores.push(req.body)
     addStudent.save()
 
-   return res.status(201).json({ status: "success", addStudent, message: "Student created successfully." });
+   return res.status(201).json({ status: "success", addStudent, message: "Scores added successfully." });
   }
   else {// if yes, check whether student has the subject's scores for the session and term specified, add scores as appropriate
     const { sessionName, className} = req.body;
     let termName = req.body.term.termName;
     for (let scorescount = 0; scorescount < alreadyHasScores.scores.length; scorescount++) {
      
-      if (sessionName == alreadyHasScores.scores[scorescount].sessionName && className == alreadyHasScores.scores[scorescount].className) {
+      if (sessionName == alreadyHasScores.scores[scorescount].sessionName) {
         for (let termcount = 0; termcount < alreadyHasScores.scores[scorescount].term.length; termcount++) {
           if (alreadyHasScores.scores[scorescount].term[termcount].termName == termName) {
             for (let subjectcount = 0; subjectcount < alreadyHasScores.scores[scorescount].term[termcount].subjects.length; subjectcount++) {
               if (req.body.term.subjects.subjectName == alreadyHasScores.scores[scorescount].term[termcount].subjects[subjectcount].subjectName) {
                 console.log("match seen")
+                console.log(alreadyHasScores.scores[scorescount].term[termcount].termName)
+                console.log(termName)
                 throw new BadUserRequestError(`Error: ${isStudent.firstName} ${isStudent.lastName} already has scores for ${req.body.term.subjects.subjectName}`);
               }
             }
-            req.body.term.subjects.totalScore = req.body.term.subjects.testScore + req.body.term.subjects.examScore;
+            req.body.term.subjects.totalScore = +req.body.term.subjects.testScore + +req.body.term.subjects.examScore;
             alreadyHasScores.scores[scorescount].term[termcount].subjects.push(req.body.term.subjects)
             alreadyHasScores.save() 
             return res.status(201).json({ status: "success", alreadyHasScores, message: "Subject added successfully." });
           }
-          else if (termName != alreadyHasScores.scores[scorescount].term[termcount].termName) {
-            console.log("match seen here")
-            req.body.term.subjects.totalScore = req.body.term.subjects.testScore + req.body.term.subjects.examScore;
-            alreadyHasScores.scores[scorescount].term.push(req.body.term)
-            alreadyHasScores.save()
-            return res.status(201).json({ status: "success", alreadyHasScores, message: "Subject added successfully for the term." });
-          }
         }
+        // if (alreadyHasScores.scores[scorescount].term[termcount].termName != termName ) {
+          console.log("match seen here")
+          // console.log(alreadyHasScores.scores[scorescount].term[termcount].termName)
+          console.log(termName)
+          req.body.term.subjects.totalScore = +req.body.term.subjects.testScore + +req.body.term.subjects.examScore;
+          alreadyHasScores.scores[scorescount].term.push(req.body.term)
+          alreadyHasScores.save()
+          return res.status(201).json({ status: "success", alreadyHasScores, message: "Subject added successfully for the term." });
+        // }
         }
-      else if (sessionName != alreadyHasScores.scores[scorescount].sessionName && className != alreadyHasScores.scores[scorescount].className) {
+      else if (sessionName != alreadyHasScores.scores[scorescount].sessionName) {
         console.log("match seen here here")
-        req.body.term.subjects.totalScore = req.body.term.subjects.testScore + req.body.term.subjects.examScore;
+        req.body.term.subjects.totalScore = +req.body.term.subjects.testScore + +req.body.term.subjects.examScore;
         alreadyHasScores.scores.push(req.body)
         alreadyHasScores.save()
         return res.status(201).json({ status: "Success", alreadyHasScores, message: `${req.body.term.subjects.subjectName} scores for this student added successfully` });
       }
-    
+    // else throw new NotFoundError("Error: no match found for the term specified")
+    // else{
+    //   req.body.term.subjects.totalScore = +req.body.term.subjects.testScore + +req.body.term.subjects.examScore;
+    //     alreadyHasScores.scores.push(req.body)
+    //     alreadyHasScores.save()
+    //     return res.status(201).json({ status: "Success", alreadyHasScores, message: `${req.body.term.subjects.subjectName} scores for this student added successfully` });
+    // }
   }
 }
 
 }
-
 
 
 const getScores = async (req, res, next) => {
-  const { admNo, firstName, lastName } = req.query;
+  // console.log(req.query)
+  const { admNo, termName, sessionName } = req.query;
   // check whether details match any student of the school
-  const isStudent = await Student.findOne({
-    $and: [{ admNo }, { firstName }, { lastName }]
-  })
+  const isStudent = await Student.findOne({ admNo })
+    // $and: [{ admNo }, { firstName }, { lastName }]
+  
   if (!isStudent) {
     return next(new Error("Error: no such student found"));
   }
-  dbDebugger(isStudent._id)
+
   // check whether student exists in the scores database
   //if not, return error message
   const alreadyHasScores = await Score.findOne({ studentId: isStudent._id })
-  if (!alreadyHasScores) { return next(new Error("Error: no scores registered for this student")); }
+  if (!alreadyHasScores) throw new NotFoundError("Error: no scores registered for this student"); 
   else { // if yes, return all registerd scores for the student
-    const result = alreadyHasScores.scores
-    res.status(200).json({ status: "success", msg: `student has scores registered for ${result.length} terms`, result });
+    let result = alreadyHasScores.scores
+    // console.log(result)
+    for(let count = 0; count < result.length; count++){
+      if (result[count].sessionName == sessionName) {
+        for (let termcount = 0; termcount < result[count].term.length; termcount++) {
+          if (result[count].term[termcount].termName == termName) {
+            comment = result[count].term[termcount].comment
+            result = result[count].term[termcount].subjects
+      
+            return res.status(200).json({ status: "success", message: `scores returned for ${alreadyHasScores.student_name}`, result, comment });
+          }
+        }  
+        }   
+      }
+      throw new NotFoundError("Error: no scores found for the term specified")
+    
   }
 
 }

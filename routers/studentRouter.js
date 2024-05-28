@@ -5,15 +5,17 @@ const {addStudent,
        getAllStudents,
        editStudent,
        updateStudent,
-       deleteStudent
+       deleteStudent,
+       getStudentsByClass
        } 
        = require('../controllers/studentController')
 const authenticateUser = require('../middleware/auth')
-const {admin} = require('../middleware/roles')
+const {admin, adminORteacher} = require('../middleware/roles')
 
 
 router.route('/registerStudent').post([authenticateUser, admin], addStudent)
 router.route('/all/:page').get([authenticateUser, admin], getAllStudents)
+router.route('/byClass/:page').get([authenticateUser, adminORteacher], getStudentsByClass)
 router.route('/:page').get([authenticateUser, admin], getStudents)
 router.route('/editStudent').post([authenticateUser, admin], editStudent)
 router.route('/updateStudent').patch([authenticateUser, admin], updateStudent)

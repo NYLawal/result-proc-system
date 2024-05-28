@@ -48,6 +48,13 @@ function addStaffValidator(staffer){
           "Teacher must have a class"
         )
       ),
+      teacherProgramme:Joi.string()
+      // Joi.array().items(Joi.string())
+      .error(
+        new ValidationError(
+          "Teacher must have a programme"
+        )
+      ),
       role:Joi.string()
       .required()
       .error(

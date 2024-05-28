@@ -44,7 +44,15 @@ const staffSchema = new mongoose.Schema(
     },
     teacherClass: {
       type: String,
-      maxlength: 25
+      maxlength: 25,
+      lowercase: true,
+      trim:true
+    },
+    teacherProgramme: {
+      type: String,
+      maxlength: 25,
+      lowercase: true,
+      trim:true
     },
     role: {
       type: String,

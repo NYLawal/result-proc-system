@@ -112,7 +112,7 @@ function updateStudentValidation(student) {
           "lastname cannot be empty and must be between 3 and 25 characters"
         )
       ),
-    gender: Joi.string().required(),
+    gender: Joi.string().required().valid("male","female"),
     entryClass: Joi.string().required(),
     address: Joi.string()
       .required()
@@ -149,6 +149,7 @@ function updateStudentValidation(student) {
     .error(new ValidationError("state of origin cannot be empty or exceed 10 characters")),
     maritalStatus: Joi.string()
     .required()
+    .valid("single","married")
     .error(new ValidationError("input a valid marital status")),
     programme: Joi.string().required()
     .error(new ValidationError("input the programme the student is enrolled in")),

@@ -52,7 +52,7 @@ const getStaff = async (req, res, next) => {
     .sort({ role: 1 })
     .select('_id stafferName email gender address phoneNumber role isAdmin')
 
-  if (!staff) return next(new Error("Error: no staff found"));
+  if (!staff) throw new NotFoundError("Error: no staff found");
   res.status(200).json({
     status: "Success",
     staff_list: staff,
@@ -63,13 +63,42 @@ const getStaff = async (req, res, next) => {
 const getTeachers = async (req, res, next) => {
   const teachers = await Staff.find({ role: "teacher" })
     .sort({ stafferName: 1 })
-    .select('_id stafferName email gender address phoneNumber role isAdmin teacherClass')
+    .select('_id stafferName email gender address phoneNumber role isAdmin teacherClass teacherProgramme')
+    console.log(teachers)
 
-  if (!teachers) return next(new Error("Error: no teachers found"));
+  if (!teachers) throw new NotFoundError("Error: no teachers found");
   res.status(200).json({
     status: "Success",
     teachers_list: teachers,
     noOfStaff: teachers.length
+  });
+};
+const getTeacherClass = async (req, res, next) => {
+  // const teacher = await Staff.findOne({$and: [{email:req.user.email}, {role:"teacher"}]})
+  const teacher = await Staff.findOne({email:req.user.email})
+    .select('teacherClass teacherProgramme')
+
+  if (!teacher) throw new NotFoundError("Error: no such staff found");
+  res.status(200).json({
+    status: "Success",
+    message: "Teacher class and programme successfully returned",
+    teacher
+  });
+};
+
+const assignAsTeacher = async (req, res, next) => {
+  // const teacher = await Staff.findOne({$and: [{email:req.user.email}, {role:"teacher"}]})
+  const {email, teacherClass, teacherProgramme} = req.body
+  const teacher = await Staff.findOne({email})
+  if (!teacher) throw new NotFoundError("Error: no such staff found");
+
+  teacher.teacherClass = teacherClass;
+  teacher.teacherProgramme = teacherProgramme;
+
+  res.status(200).json({
+    status: "Success",
+    message: "Teacher successfully assigned",
+    teacher
   });
 };
 
@@ -84,7 +113,7 @@ const editStaffQuery = async (req, res, next) => {
     // {stafferName: {$regex: "stafferName", $options: "i"} },
     // ],
   // });
-  if (!staffer) return next(new Error("Error: no such staffer found"));
+  if (!staffer) throw new NotFoundError("Error: no such staffer found");
 
   res
     .status(200)
@@ -100,7 +129,7 @@ const updateStaff = async (req, res, next) => {
   const { email } = req.body;
   const staffer = await Staff.findOneAndUpdate({ email }, req.body, {new: true}) 
     
-  if (!staffer) return next(new Error("Error: the staffer does not exist"));
+  if (!staffer) throw new NotFoundError("Error: the staffer does not exist");
 
   res
     .status(200)
@@ -114,9 +143,9 @@ const deleteStaff = async (req, res, next) => {
   
   let { email } = req.body;
   const staff = await Staff.findOneAndDelete({ email });
-  if (!staff) return next(new Error("Error: no such staff found"));
+  if (!staff) throw new NotFoundError("Error: no such staff found");
 
   res.status(200).json({ status: "success", message: "Staff has been deleted" });
 };
 
-module.exports = { addStaff, getStaff, getTeachers, editStaffQuery, updateStaff, deleteStaff }
+module.exports = { addStaff, getStaff, getTeachers, getTeacherClass, assignAsTeacher, editStaffQuery, updateStaff, deleteStaff }
