@@ -57,7 +57,8 @@ const staffSchema = new mongoose.Schema(
     role: {
       type: String,
       default: "teacher",
-      lowercase: true
+      lowercase: true,
+      trim:true
     },
     isAdmin: {
         type: Boolean,

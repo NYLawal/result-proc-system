@@ -40,6 +40,7 @@ const userSignUp = async (req, res, next) => {
     if (isStaff){
          req.body.userRole = isStaff.role;
          req.body.isAdmin = isStaff.isAdmin;
+         if (isParent)  req.body.otherRole = "parent";
     }
     
     const newUser = await User.create(req.body);
@@ -61,12 +62,13 @@ const userLogIn = async (req, res, next) => {
 
     const isValidPassword = await user.comparePassword(req.body.password)
     if (!isValidPassword) throw new UnAuthorizedError("Error: invalid email or password");
-
+    
     const access_token = user.generateToken()
     res.header('access_token', access_token).status(200).json({
         status: "Success",
         message: "Successfully logged in",
-        user:  _.pick(user, ['_id','email']),
+        // user:  _.pick(user, ['_id','email']),
+        user,
         access_token: access_token
     });
 }
@@ -120,10 +122,12 @@ const resetPassword = async(req, res) => {
 
   const portalRedirect = async(req,res) =>{
     let role = req.user.role;
+    let other_role = req.user.other_role;
     res.status(200).json({
     status: "Success",
     message: `Successfully authenticated as ${role}`,
-    role
+    role,
+    other_role
     })
     }
 

@@ -78,7 +78,7 @@ const getTeacherClass = async (req, res, next) => {
   const teacher = await Staff.findOne({email:req.user.email})
     .select('teacherClass teacherProgramme')
 
-  if (!teacher) throw new NotFoundError("Error: no such staff found");
+  if (!teacher) throw new NotFoundError("Error: You have not been assigned as a teacher");
   res.status(200).json({
     status: "Success",
     message: "Teacher class and programme successfully returned",
@@ -94,6 +94,7 @@ const assignAsTeacher = async (req, res, next) => {
 
   teacher.teacherClass = teacherClass;
   teacher.teacherProgramme = teacherProgramme;
+  teacher.save();
 
   res.status(200).json({
     status: "Success",
@@ -124,13 +125,16 @@ const editStaffQuery = async (req, res, next) => {
 const updateStaff = async (req, res, next) => {
   const { error } = updateStaffValidator(req.body);
   if (error) throw error;
-
-  // const { email, stafferName, gender, address, phoneNumber, role, teacherClass } = req.body;
+ const userRole = req.body.role;
+  
   const { email } = req.body;
   const staffer = await Staff.findOneAndUpdate({ email }, req.body, {new: true}) 
-    
-  if (!staffer) throw new NotFoundError("Error: the staffer does not exist");
+    if (!staffer) throw new NotFoundError("Error: the staffer does not exist");
 
+  const user = await User.findOneAndUpdate({ email: req.body.email }, { userRole }, {
+    new: true,
+  });
+  if (!user) throw new NotFoundError("Error: this user is not registered");
   res
     .status(200)
     .json({ status: "success", message: "Staffer information is up-to-date", staffer });

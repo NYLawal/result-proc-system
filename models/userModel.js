@@ -28,10 +28,10 @@ const userSchema = new mongoose.Schema(
         type: Boolean,
         default: false
     },
-    // history: {
-    //   type: Array,
-    //   default: [],
-    // },
+    otherRole:{
+      type: String,
+      lowercase: true
+    }
   },
   { timestamps: true }
 );
@@ -46,6 +46,7 @@ userSchema.methods.generateToken = function(){
     _id: this._id,
     email: this.email,
     role: this.userRole,
+    other_role: this.otherRole,
     isAdmin: this.isAdmin
   }
   const token = jwt.sign(payload, process.env.jwt_secret_key, { expiresIn: process.env.jwt_lifetime });

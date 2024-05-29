@@ -128,7 +128,7 @@ const getStudentsByClass = async (req, res, next) => {
     .limit(pageSize);
     
     if (students.length == 0)
-      return next(new Error("Error: no such students found"));
+      return next(new Error("Error: no students found"));
     
     const pgnum = getEndOfPage(noOfStudents, pageSize)
 

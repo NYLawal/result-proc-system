@@ -112,7 +112,10 @@ function updateStudentValidation(student) {
           "lastname cannot be empty and must be between 3 and 25 characters"
         )
       ),
-    gender: Joi.string().required().valid("male","female"),
+    gender: Joi.string()
+    .required()
+    .valid("male","female")
+    .error(new ValidationError("input a valid gender")),
     entryClass: Joi.string().required(),
     address: Joi.string()
       .required()
