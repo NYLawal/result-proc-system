@@ -45,7 +45,7 @@ const getStudents = async (req, res, next) => {
   const pageSize = 5;
   let queryObject = req.query;
 
-  const { admNo, firstName, lastName, gender, address, entryClass, stateOfOrigin, maritalStatus, programme, presentClass, classStatus, studentStatus } = req.query;
+  const { admNo, firstName, lastName, gender, address, entryClass, stateOfOrigin, maritalStatus, programme, presentClass, classStatus, studentStatus,paymentStatus } = req.query;
   // let queryObject = {};
 
   if (admNo) {
@@ -83,6 +83,9 @@ const getStudents = async (req, res, next) => {
   }
   if (studentStatus) {
     queryObject.studentStatus = studentStatus;
+  }
+  if (paymentStatus) {
+    queryObject.paymentStatus = paymentStatus;
   }
   if (Object.keys(queryObject).length === 0)
     return next(new Error("Error: no such criteria exists"));
@@ -160,6 +163,7 @@ const getAllStudents = async (req, res, next) => {
  
   const students = await Student.find({studentStatus:"current"})
   const noOfStudents = students.length;
+  if (!students) return next(new Error("Error: no students found"));
   
   const studentsperpage = await Student.find({studentStatus:"current"})
     .sort({ admNo: 1 })
@@ -167,7 +171,6 @@ const getAllStudents = async (req, res, next) => {
     .limit(pageSize);
 
   const pgnum = getEndOfPage(noOfStudents, pageSize)
-  if (!students) return next(new Error("Error: no students found"));
 
   for (let i=0; i<studentsperpage.length; i++){
     let date = studentsperpage[i].registeredOn.toString()

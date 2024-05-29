@@ -61,8 +61,8 @@ function newStudentValidation(student) {
     ),
     stateOfOrigin: Joi.string()
     .required()
-    .max(10)
-    .error(new ValidationError("state of origin cannot be empty or exceed 10 characters")),
+    .max(17)
+    .error(new ValidationError("state of origin cannot be empty or exceed 17 characters")),
     maritalStatus: Joi.string().required(),
     programme: Joi.string().required(),
     studentStatus: Joi.string(),

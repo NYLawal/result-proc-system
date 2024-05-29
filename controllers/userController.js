@@ -48,7 +48,7 @@ const userSignUp = async (req, res, next) => {
     res.header('token', token).status(201).json({
         status: "Success",
         message: "User created successfully",
-        user:  _.pick(newUser, ['email', 'isAdmin', 'userRole' ])
+        user
     });    
 }
 

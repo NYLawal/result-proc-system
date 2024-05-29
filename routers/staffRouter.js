@@ -7,8 +7,8 @@ const {superAdmin, admin} = require('../middleware/roles')
 
 
 router.post('/addStaff', [authenticateUser, superAdmin], addStaff)
-router.get('/viewStaff', [authenticateUser, admin], getStaff)
-router.get('/viewTeachers', [authenticateUser, admin], getTeachers)
+router.get('/viewStaff/:page', [authenticateUser, admin], getStaff)
+router.get('/viewTeachers/:page', [authenticateUser, admin], getTeachers)
 router.get('/getClass', [authenticateUser], getTeacherClass)
 router.post('/editStaff', [authenticateUser, superAdmin], editStaffQuery)
 router.patch('/assignTeacher', [authenticateUser, superAdmin], assignAsTeacher)
