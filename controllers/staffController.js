@@ -75,7 +75,6 @@ const getStaff = async (req, res, next) => {
 
   const pgnum = getEndOfPage(noOfStaff, pageSize)
 
-
   for (let i=0; i<staffperpage.length; i++){  
     let serialno= (pageSize*pageNumber)-(pageSize-(i+1))
     staffperpage[i].serialNo=serialno;
@@ -97,7 +96,6 @@ const getTeachers = async (req, res, next) => {
   const teachers = await Staff.find({ role: "teacher" })
     .sort({ stafferName: 1 })
     .select('_id stafferName email gender address phoneNumber role isAdmin teacherClass teacherProgramme')
-    console.log(teachers)
   if (!teachers) throw new NotFoundError("Error: no teachers found");
 
   const noOfStaff = teachers.length;
@@ -122,6 +120,8 @@ const getTeachers = async (req, res, next) => {
     pgnum
   });
 };
+
+
 const getTeacherClass = async (req, res, next) => {
   // const teacher = await Staff.findOne({$and: [{email:req.user.email}, {role:"teacher"}]})
   const teacher = await Staff.findOne({email:req.user.email})

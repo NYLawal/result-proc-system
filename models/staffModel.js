@@ -64,6 +64,9 @@ const staffSchema = new mongoose.Schema(
         type: Boolean,
         default: false
     },
+    serialNo: {
+      type: Number
+    },
   },
   { timestamps: true }
 );
