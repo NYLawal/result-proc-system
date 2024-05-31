@@ -132,6 +132,8 @@ const getStudentsByClass = async (req, res, next) => {
     
     if (students.length == 0)
       return next(new Error("Error: no students found"));
+
+    // const admissionNumbers = students.admNo
     
     const pgnum = getEndOfPage(noOfStudents, pageSize)
 
@@ -144,7 +146,7 @@ const getStudentsByClass = async (req, res, next) => {
   }
   res
     .status(200)
-    .json({ status: "Success", studentsperpage, noOfStudents, page:pageNumber, pgnum });
+    .json({ status: "Success", students, studentsperpage, noOfStudents, page:pageNumber, pgnum });
 };
 
 
