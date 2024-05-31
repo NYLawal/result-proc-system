@@ -54,6 +54,15 @@ const addScores = async (req, res, next) => {
   const alreadyHasScores = await Score.findOne({ admissionNumber: admNo })
   if (!alreadyHasScores) {
     const addStudent = await Score.create({ ...req.body, studentId: isStudent._id, admissionNumber: isStudent.admNo, student_name: isStudent.firstName + " " + isStudent.lastName });
+    req.body.term.grandTotal = req.body.term.subjects.length * 100;
+    console.log("stage1 passed", typeof req.body.term.grandTotal)
+    req.body.term.marksObtained = req.body.term.subjects.reduce((accumulator , score) => {
+      return accumulator += (+score.totalScore);
+    }, 0)
+    console.log("stage2 passed", typeof req.body.term.marksObtained)
+    req.body.term.avgPercentage = (req.body.term.marksObtained/req.body.term.grandTotal) * 100
+    console.log("stage3passed", req.body.term.avgPercentage)
+   
     addStudent.scores.push(req.body)
     addStudent.save()
 
@@ -73,6 +82,15 @@ const addScores = async (req, res, next) => {
         }
         console.log("match seen here")
         console.log(termName)
+        req.body.grandTotal = req.body.term.subjects.length * 100;
+        console.log("stage1 passed")
+        req.body.marksObtained = req.body.term.subjects.reduce((accumulator , score) => {
+          return accumulator += score.totalScore;
+        }, 0)
+        console.log("stage2 passed")
+        req.body.avgPercentage = (req.body.marksObtained/req.body.grandTotal) * 100
+        console.log("stage2 passed")
+
         alreadyHasScores.scores[scorescount].term.push(req.body.term)
         alreadyHasScores.save()
         return res.status(201).json({ status: "Success", alreadyHasScores, message: `${req.body.term.termName} term scores added successfully for the student` });
@@ -80,6 +98,14 @@ const addScores = async (req, res, next) => {
       // for non-existing session
       else if (sessionName != alreadyHasScores.scores[scorescount].sessionName) {
         console.log("match seen here here")
+        req.body.grandTotal = req.body.term.subjects.length * 100;
+    console.log("stage1 passed")
+    req.body.marksObtained = req.body.term.subjects.reduce((accumulator , score) => {
+      return accumulator += score.totalScore;
+    }, 0)
+    console.log("stage2 passed")
+    req.body.avgPercentage = (req.body.marksObtained/req.body.grandTotal) * 100
+    console.log("stage2 passed")
         alreadyHasScores.scores.push(req.body)
         alreadyHasScores.save()
 
@@ -114,9 +140,12 @@ const getScores = async (req, res, next) => {
         for (let termcount = 0; termcount < result[count].term.length; termcount++) {
           if (result[count].term[termcount].termName == termName) {
             comment = result[count].term[termcount].comment
+            grandTotal = result[count].term[termcount].grandTotal
+            marksObtained = result[count].term[termcount].marksObtained
+            avgPercentage= result[count].term[termcount].avgPercentage
             result = result[count].term[termcount].subjects
 
-            return res.status(200).json({ status: "success", message: `Scores returned for ${alreadyHasScores.student_name}`, result, comment });
+            return res.status(200).json({ status: "success", message: `Scores returned for ${alreadyHasScores.student_name}`, result, comment, grandTotal, marksObtained, avgPercentage });
           }
         }
       }
