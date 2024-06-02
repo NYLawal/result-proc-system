@@ -19,7 +19,11 @@ const scoreSchema = new mongoose.Schema({
             testScore: Number, 
             examScore: Number,
             totalScore: Number, 
-            remark: String
+            firstTermScore: Number,
+            secondTermScore: Number,
+            cumulativeScore: Number,
+            cumulativeAverage: Number,
+            remark: String,
           }],
           comment: String,
           grandTotal:Number,
