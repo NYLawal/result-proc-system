@@ -1,6 +1,7 @@
 // const dbDebugger = require("debug")("app:db");
 const Student = require("../models/studentModel");
 const Score = require("../models/scoreModel");
+const sClass = require("../models/classModel");
 const { MailNotSentError, BadUserRequestError, NotFoundError, UnAuthorizedError } =
   require('../middleware/errors')
 const {
@@ -230,6 +231,29 @@ const getScores = async (req, res, next) => {
 }
 
 
+const getClassScores = async (req, res, next) => {
+
+  const { className, termName, sessionName } = req.query;
+
+  const classExists = await Score.find(
+    {
+      $and:
+        [
+          { "scores.className": className },
+          { "scores.sessionName": sessionName },
+          { "scores.term.termName": termName },
+        ]
+    })
+  if (classExists.length == 0) throw new NotFoundError("Error: this class has no registered scores for the session specified");
+  
+  const classRequest = await sClass.findOne({className})
+  if (!classRequest) throw new NotFoundError("Error: the requested class does not exist");
+  const classSubjects = classRequest.subjects
+
+  res.status(200).json({ status: "success", message: "successful", classExists, classSubjects });
+}
+
+
 
 
 const promoteStudents = async (req, res, next) => {
@@ -310,7 +334,7 @@ const updateScores = async (req, res, next) => {
 
 
 
-module.exports = { addScores, getScores, promoteStudents, addTermComment }
+module.exports = { addScores, getScores, getClassScores, promoteStudents, addTermComment }
 
 
 // const addScores = async (req, res, next) => {

@@ -13,7 +13,7 @@ const staffSchema = new mongoose.Schema(
       },
     email: {
       type: String,
-      required: true,
+      required: [true, "email esxists for another staff"],
       trim: true,
       unique:true,
     //   index: { unique: true },

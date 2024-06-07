@@ -5,6 +5,7 @@ const studentSchema = new mongoose.Schema({
   admNo: {
     type: String,
     required: [true, "admission number cannot be empty"],
+    unique:[true, "a student with this admission number already exists"],
     trim: true,
     maxlength: [10, "maximum characters for admission number is 10"],
     match: [/^MDRS+[0-9]{1,4}/, "invalid admission number"],
@@ -62,7 +63,7 @@ const studentSchema = new mongoose.Schema({
   email: {
     type: String,
     trim: true,
-    unique:true,
+    unique:[true, "email exists for another student"],
     match: /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/,
   },
 

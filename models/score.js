@@ -39,11 +39,11 @@ const scoreSchema = new mongoose.Schema({
               type:String,
               trim:true,
               required: [true, "subject cannot be empty"],
-              enum: {
-                values: ["fiqh", "hadith", "tawheed", "tafseer", "tadribaatuLugha", "lugha", "imlah", "hifz", "tajweed", "tahbeer", 
-                "taajiyya", "qiraaha", "khatu", "adhkaar", "nahw", "sarf"],
-                message: "{VALUE} is not supported, input a valid subject",
-              },
+              // enum: {
+              //   values: ["fiqh", "hadith", "tawheed", "tafseer", "tadribaatuLugha", "lugha", "imlah", "hifz", "tajweed", "tahbeer", 
+              //   "taajiyya", "qiraaha", "khatu", "adhkaar", "nahw", "sarf"],
+              //   message: "{VALUE} is not supported, input a valid subject",
+              // },
                },
          testScore:{
               type:Number,
