@@ -54,7 +54,7 @@ const addScores = async (req, res, next) => {
   // check whether student exists in the scores database, if not, add their data
   const alreadyHasScores = await Score.findOne({ admissionNumber: admNo })
   if (!alreadyHasScores) {
-    const addStudent = await Score.create({ ...req.body, studentId: isStudent._id, admissionNumber: isStudent.admNo, student_name: isStudent.firstName + " " + isStudent.lastName });
+    const addStudent = await Score.create({ ...req.body, studentId: isStudent._id, admissionNumber: isStudent.admNo, student_name: isStudent.firstName + " " + isStudent.lastName, programme: isStudent.programme });
     // calculate total and average percentage
     req.body.term.grandTotal = req.body.term.subjects.length * 100;
     console.log("stage1 passed", typeof req.body.term.grandTotal)
@@ -117,15 +117,6 @@ const addScores = async (req, res, next) => {
             }
             else secondTermScore[0] = 0
 
-
-            // let matchSubject1st = firstTerm.subjects.find(asubject => asubject.subjectName == `${req.body.term.subjects[subjectcount].subjectName}`)
-            // let matchSubject2nd = secondTerm.subjects.find(asubject => asubject.subjectName == `${req.body.term.subjects[subjectcount].subjectName}`)
-            // let firstTermScore = matchSubject1st.totalScore
-            // if (firstTermScore == undefined) firstTermScore = 0;
-            // console.log(firstTermScore)
-            // let secondTermScore = matchSubject2nd.totalScore
-            // if (secondTermScore == undefined) secondTermScore = 0;
-            // console.log(secondTermScore)
             console.log(firstTermScore[0])
             console.log(secondTermScore[0])
             if ((firstTermScore[0] != 0 && secondTermScore[0] == 0) || (secondTermScore[0] == 0 && firstTermScore[0] != 0)) noOfTerms = 2
@@ -233,12 +224,13 @@ const getScores = async (req, res, next) => {
 
 const getClassScores = async (req, res, next) => {
 
-  const { className, termName, sessionName } = req.query;
+  const { className, termName, sessionName, programme } = req.query;
 
   const classExists = await Score.find(
     {
       $and:
         [
+          { programme: programme },
           { "scores.className": className },
           { "scores.sessionName": sessionName },
           { "scores.term.termName": termName },
