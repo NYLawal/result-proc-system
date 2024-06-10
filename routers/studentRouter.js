@@ -3,10 +3,11 @@ const router = express.Router();
 const {addStudent,
        getStudents,
        getAllStudents,
+       getStudentsByClass,
        editStudent,
        updateStudent,
+       promoteStudents,
        deleteStudent,
-       getStudentsByClass
        } 
        = require('../controllers/studentController')
 const authenticateUser = require('../middleware/auth')
@@ -19,6 +20,7 @@ router.route('/byClass/:page').get([authenticateUser, adminORteacher], getStuden
 router.route('/:page').get([authenticateUser, admin], getStudents)
 router.route('/editStudent').post([authenticateUser, admin], editStudent)
 router.route('/updateStudent').patch([authenticateUser, admin], updateStudent)
+router.route('/promoteStudents').patch([authenticateUser, admin], promoteStudents)
 router.route('/').delete(deleteStudent)
 
 

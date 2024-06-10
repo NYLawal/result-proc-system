@@ -171,15 +171,12 @@ const studentSchema = new mongoose.Schema({
   serialNo: {
     type: Number
   },
-  // scores:{
-  //     type: scoreSchema,
-  //     required:true
-  // }, 
+  
 });
 
-studentSchema.pre("save", function(){
-  this.presentClass = this.entryClass
-})
+// studentSchema.pre("save", function(){
+//   this.presentClass = this.entryClass
+// })
 
 const Student = mongoose.model("Student", studentSchema);
 
