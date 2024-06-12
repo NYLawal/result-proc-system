@@ -4,9 +4,12 @@ const mongoose = require('mongoose')
 const classSchema = new mongoose.Schema({
     className:{
         type: String,
-        // required:[true, 'classname cannot be empty'],
         trim:true,
         },
+    programme: {
+        type: String,
+        trim:true,
+    },
     subjects: []
     // subjects: [{
     //     subjectName:{

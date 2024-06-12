@@ -303,16 +303,3 @@ module.exports = {
   deleteStudent,
 };
 
-// *******************************************************************************************************************
-// const getStudent = async (req,res) => {
-//     try {
-//         const {firstName, lastName} = req.query;
-//         const student = await Student.findOne({firstName,lastName})
-//         if(!student){
-//             return res.status(404).json({msg:`student with name: ${firstName} ${lastName} does not exist`})
-//         }
-//         res.status(200).json({student, msg:"student found!"})
-//     } catch (error) {
-//         res.status(500).json({msg:error})
-//     }
-// }
