@@ -28,7 +28,11 @@ const scoreSchema = new mongoose.Schema({
           comment: String,
           grandTotal:Number,
           marksObtained:Number,
-          avgPercentage:Number
+          avgPercentage:Number,
+          attendance:[{
+            termdate:String,
+            presence:String
+          }]
       }],
       
     }]

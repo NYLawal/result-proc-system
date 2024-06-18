@@ -177,6 +177,9 @@ const getScores = async (req, res, next) => {
   if (!isStudent) {
     return next(new Error("Error: no such student found"));
   }
+  if ((req.user.role == "parent" && req.user.email != isStudent.parentEmail) || (req.user.other_role == "parent" && req.user.role != 'teacher')) {
+    throw new BadUserRequestError("Error: you do not have access to this result. Input your ward's admission number");
+  }
   const alreadyHasScores = await Score.findOne({ studentId: isStudent._id })
 
   if (!alreadyHasScores) throw new NotFoundError("Error: no scores registered for this student");
@@ -188,6 +191,7 @@ const getScores = async (req, res, next) => {
           if (termName == result[count].term[termcount].termName) {
             let firstTermScore = []
             let secondTermScore = []
+            attendance = result[count].term[termcount].attendance
             comment = result[count].term[termcount].comment
             grandTotal = result[count].term[termcount].grandTotal
             marksObtained = result[count].term[termcount].marksObtained
@@ -212,7 +216,7 @@ const getScores = async (req, res, next) => {
                 else secondTermScore[subjectcount] = 0
               }
             }
-            return res.status(200).json({ status: "success", message: `${alreadyHasScores.student_name}`, termName, report, comment, grandTotal, marksObtained, avgPercentage, firstTermScore, secondTermScore });
+            return res.status(200).json({ status: "success", message: `${alreadyHasScores.student_name}`, termName, report, comment, grandTotal, marksObtained, avgPercentage, firstTermScore, secondTermScore, attendance });
           }
         }
       }
@@ -236,7 +240,7 @@ const getClassScores = async (req, res, next) => {
           { "scores.term.termName": termName },
         ]
     })
-  if (classExists.length == 0) throw new NotFoundError("Error: this class has no registered scores for the session specified");
+  if (classExists.length == 0) throw new NotFoundError("Error: this class has no registered scores for the term/session specified");
 
   const classRequest = await sClass.findOne({
     $and:
@@ -250,8 +254,6 @@ const getClassScores = async (req, res, next) => {
 
   res.status(200).json({ status: "success", message: "successful", classExists, classSubjects });
 }
-
-
 
 
 const promoteStudents = async (req, res, next) => {
@@ -320,40 +322,40 @@ const updateScores = async (req, res, next) => {
                   const firstTerm = alreadyHasScores.scores[scorescount].term.find(aterm => aterm.termName == "first")
                   const secondTerm = alreadyHasScores.scores[scorescount].term.find(aterm => aterm.termName == "second")
 
-                    if (firstTerm != undefined) {
-                      let matchSubject1st = firstTerm.subjects.find(asubject => asubject.subjectName == `${req.body.term.subjects.subjectName}`)
-                      firstTermScore[0] = matchSubject1st.totalScore
-                    }
-                    else firstTermScore[0] = 0;
+                  if (firstTerm != undefined) {
+                    let matchSubject1st = firstTerm.subjects.find(asubject => asubject.subjectName == `${req.body.term.subjects.subjectName}`)
+                    firstTermScore[0] = matchSubject1st.totalScore
+                  }
+                  else firstTermScore[0] = 0;
 
-                    if (secondTerm != undefined) {
-                      let matchSubject2nd = secondTerm.subjects.find(asubject => asubject.subjectName == `${req.body.term.subjects.subjectName}`)
-                      secondTermScore[0] = matchSubject2nd.totalScore
-                    }
-                    else secondTermScore[0] = 0
+                  if (secondTerm != undefined) {
+                    let matchSubject2nd = secondTerm.subjects.find(asubject => asubject.subjectName == `${req.body.term.subjects.subjectName}`)
+                    secondTermScore[0] = matchSubject2nd.totalScore
+                  }
+                  else secondTermScore[0] = 0
 
-                    console.log(firstTermScore[0])
-                    console.log(secondTermScore[0])
-                    if ((firstTermScore[0] != 0 && secondTermScore[0] == 0) || (secondTermScore[0] == 0 && firstTermScore[0] != 0)) noOfTerms = 2
-                    else if (firstTermScore[0] != 0 && secondTermScore[0] != 0) noOfTerms = 3
-                    console.log("number of terms ", noOfTerms)
+                  console.log(firstTermScore[0])
+                  console.log(secondTermScore[0])
+                  if ((firstTermScore[0] != 0 && secondTermScore[0] == 0) || (secondTermScore[0] == 0 && firstTermScore[0] != 0)) noOfTerms = 2
+                  else if (firstTermScore[0] != 0 && secondTermScore[0] != 0) noOfTerms = 3
+                  console.log("number of terms ", noOfTerms)
 
 
-                    alreadyHasScores.scores[scorescount].term[termcount].subjects[subjectcount].cumulativeScore = +req.body.term.subjects.totalScore + (+firstTermScore[0]) + (+secondTermScore[0]);
-                    alreadyHasScores.scores[scorescount].term[termcount].subjects[subjectcount].cumulativeAverage = +alreadyHasScores.scores[scorescount].term[termcount].subjects[subjectcount].cumulativeScore / noOfTerms;
+                  alreadyHasScores.scores[scorescount].term[termcount].subjects[subjectcount].cumulativeScore = +req.body.term.subjects.totalScore + (+firstTermScore[0]) + (+secondTermScore[0]);
+                  alreadyHasScores.scores[scorescount].term[termcount].subjects[subjectcount].cumulativeAverage = +alreadyHasScores.scores[scorescount].term[termcount].subjects[subjectcount].cumulativeScore / noOfTerms;
 
-                    console.log(alreadyHasScores.scores[scorescount].term[termcount].subjects[subjectcount].cumulativeScore)
-                    console.log(alreadyHasScores.scores[scorescount].term[termcount].subjects[subjectcount].cumulativeAverage)
-                  
+                  console.log(alreadyHasScores.scores[scorescount].term[termcount].subjects[subjectcount].cumulativeScore)
+                  console.log(alreadyHasScores.scores[scorescount].term[termcount].subjects[subjectcount].cumulativeAverage)
 
-                    alreadyHasScores.scores[scorescount].term[termcount].grandTotal = alreadyHasScores.scores[scorescount].term[termcount].subjects.length * 100;
-                    console.log("stage1 passed", typeof alreadyHasScores.scores[scorescount].term[termcount].grandTotal)
-                    alreadyHasScores.scores[scorescount].term[termcount].marksObtained = alreadyHasScores.scores[scorescount].term[termcount].subjects.reduce((accumulator, score) => {
-                      return accumulator += (+score.totalScore);
-                    }, 0)
-                    console.log("stage2 passed", typeof alreadyHasScores.scores[scorescount].term[termcount].marksObtained)
-                    alreadyHasScores.scores[scorescount].term[termcount].avgPercentage = (alreadyHasScores.scores[scorescount].term[termcount].marksObtained / alreadyHasScores.scores[scorescount].term[termcount].grandTotal) * 100
-                    console.log("stage3passed", alreadyHasScores.scores[scorescount].term[termcount].avgPercentage)
+
+                  alreadyHasScores.scores[scorescount].term[termcount].grandTotal = alreadyHasScores.scores[scorescount].term[termcount].subjects.length * 100;
+                  console.log("stage1 passed", typeof alreadyHasScores.scores[scorescount].term[termcount].grandTotal)
+                  alreadyHasScores.scores[scorescount].term[termcount].marksObtained = alreadyHasScores.scores[scorescount].term[termcount].subjects.reduce((accumulator, score) => {
+                    return accumulator += (+score.totalScore);
+                  }, 0)
+                  console.log("stage2 passed", typeof alreadyHasScores.scores[scorescount].term[termcount].marksObtained)
+                  alreadyHasScores.scores[scorescount].term[termcount].avgPercentage = (alreadyHasScores.scores[scorescount].term[termcount].marksObtained / alreadyHasScores.scores[scorescount].term[termcount].grandTotal) * 100
+                  console.log("stage3passed", alreadyHasScores.scores[scorescount].term[termcount].avgPercentage)
                 }
 
                 alreadyHasScores.save();
@@ -369,48 +371,60 @@ const updateScores = async (req, res, next) => {
 }
 
 
+const markAttendance = async (req, res, next) => {
+  const { className, termName, sessionName, programme } = req.query;
+  console.log(req.query)
+
+  const classExists = await Score.find(
+    {
+      $and:
+        [
+          { programme: programme },
+          { "scores.className": className },
+          { "scores.sessionName": sessionName },
+          { "scores.term.termName": termName },
+        ]
+    })
+  if (classExists.length == 0) throw new NotFoundError("Error: this class is not registered");
+
+  // console.log(classExists)
+  for (let stdcount = 0; stdcount < classExists.length; stdcount++) {
+    for (let count = 0; count < req.body.length; count++) {
+      if (req.body[count].student_name == classExists[stdcount].student_name) {
+        console.log("match seen name")
+        for (let scorescount = 0; scorescount < classExists[stdcount].scores.length; scorescount++) {
+          const sessionMatch = classExists[stdcount].scores.find(asession => asession.sessionName == sessionName)
+          if (!sessionMatch) throw new BadUserRequestError("Error: the student doesn't have a record for the session specified");
+          else {
+            // if (sessionName == classExists[stdcount].scores[scorescount].sessionName) {
+            console.log("match seen session")
+            const termMatch = classExists[stdcount].scores[scorescount].term.find(aterm => aterm.termName == termName)
+            // for (let termcount = 0; termcount < classExists[stdcount].scores[scorescount].term.length; termcount++) {
+            if (!termMatch) throw new BadUserRequestError("Error: the student doesn't have a record for the term specified");
+            else {
+              console.log("match seen term")
+              let dayattendance = {
+                termdate: req.body[count].termdate,
+                presence: req.body[count].presence,
+              }
+              termMatch.attendance.push(dayattendance)
+
+              classExists[stdcount].save();
+            }
+            // }
+          }
+        }
+      }
+    }
+  }
+  // classExists.save();
+  return res.status(200).json({ status: "Success", classExists, message: `attendance updated successfully` });
+  // throw new BadUserRequestError("Error: Student does not have scores for this session");;
+
+}
 
 
 
-module.exports = { addScores, getScores, getClassScores, promoteStudents, updateScores, addTermComment }
+module.exports = { addScores, getScores, getClassScores, promoteStudents, updateScores, addTermComment, markAttendance }
 
-
-// const addScores = async (req, res, next) => {
-//   const { error } = addScoresValidation(req.body);
-//   if (error) throw error;
-
-//   const { admNo, firstName, lastName } = req.query;
-
-//   // check whether details match any student of the school
-//   const isStudent = await Student.findOne({
-//     $and: [{ admNo }, { firstName }, { lastName }]
-//   })
-//     .select("admNo firstName lastName");
-//   if (!isStudent) {
-//     return next(new Error("Error: no such student found"));
-//   }
-//   dbDebugger(isStudent._id)
-
-//   // check whether student exists in the scores database
-//   //if not, create a document for the student and push scores
-//   const alreadyHasScores = await Score.findOne({ studentId: isStudent._id })
-//   if (!alreadyHasScores) {
-//     const addStudent = await Score.create({ ...req.body, studentId: isStudent._id, AdmissionNumber: isStudent.admNo, Name: isStudent.firstName + " " + isStudent.lastName });
-//     addStudent.scores.push(req.body)
-//     addStudent.save()
-//     res.status(201).json({ status: "success", addStudent, msg: "student created and scores added successfully" });
-//   }
-//   else {// if yes, check whether student has scores for the session and term specified, display error if there is
-//     for (let count = 0; count < alreadyHasScores.scores.length; count++) {
-//       if (req.body.session === alreadyHasScores.scores[count].session && req.body.term === alreadyHasScores.scores[count].term) {
-//         dbDebugger("found ")
-//         return next(new Error("Error: scores for this term already exists for the student"));
-//       }
-//     }
-//     // if not, push the scores into the array of student's scores
-//     alreadyHasScores.scores.push(req.body)
-//     alreadyHasScores.save()
-//     res.status(201).json({ status: "success", msg: "scores for this student added successfully" });
-//   }
-// }
 
