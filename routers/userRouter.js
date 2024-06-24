@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const {userSignUp,userLogIn,forgotPassword,resetPassword,portalRedirect} 
+const {userSignUp,userLogIn,forgotPassword,resetPassword,portalRedirect, getUserEmail, sendMessage} 
        = require('../controllers/userController')
 const authenticateUser = require('../middleware/auth')
 const {superAdmin, admin} = require('../middleware/roles')       
@@ -10,7 +10,8 @@ router.route('/signup').post(userSignUp)
 router.route('/login').post(userLogIn)
 router.post('/forgotPassword', forgotPassword)
 router.post('/password-reset/:userId/:token', resetPassword)
-// router.post('/registerStudent', [authenticateUser, admin], addStudent)
+router.post('/getEmail/:userId', getUserEmail)
+router.post('/sendMessage', authenticateUser, sendMessage)
 router.get('/authorise', authenticateUser, portalRedirect)
 
 

@@ -6,6 +6,7 @@ const {addStudent,
        getStudentsByClass,
        editStudent,
        updateStudent,
+       updateStatus,
        promoteStudents,
        deleteStudent,
        } 
@@ -20,6 +21,7 @@ router.route('/byClass/:page').get([authenticateUser, adminORteacher], getStuden
 router.route('/:page').get([authenticateUser, admin], getStudents)
 router.route('/editStudent').post([authenticateUser, admin], editStudent)
 router.route('/updateStudent').patch([authenticateUser, admin], updateStudent)
+router.route('/updateStatus').patch([authenticateUser, admin], updateStatus)
 router.route('/promoteStudents').patch([authenticateUser, admin], promoteStudents)
 router.route('/').delete(deleteStudent)
 

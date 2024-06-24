@@ -214,6 +214,18 @@ const updateStudent = async (req, res, next) => {
 };
 
 
+const updateStatus = async (req, res, next) => {
+  let { admNo } = req.query;
+  let nonStudentStatus = req.body.status
+  const student = await Student.findOneAndUpdate({ admNo }, {studentStatus: "past", nonStudentStatus}, { new: true })
+  if (!student) return next(new Error("Error: no such student found"));
+
+  res
+    .status(200)
+    .json({ status: "success", message: "Student's status has been updated", student });
+};
+
+
 const promoteStudents = async (req, res, next) => {
   const { termName, sessionName } = req.body;
   const termRequest = await Score.find(
@@ -299,6 +311,7 @@ module.exports = {
   getAllStudents,
   editStudent,
   updateStudent,
+  updateStatus,
   promoteStudents,
   deleteStudent,
 };

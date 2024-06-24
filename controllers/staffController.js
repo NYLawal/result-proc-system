@@ -63,7 +63,7 @@ const getStaff = async (req, res, next) => {
   const pageSize = 7;
 
   const staff = await Staff.find({})
-    .sort({ gender: 1 })
+    .sort({ gender: -1 })
     .select('_id stafferName email gender address phoneNumber role isAdmin')
     if (!staff) throw new NotFoundError("Error: no staff found");
   const noOfStaff = staff.length;
