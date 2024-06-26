@@ -9,6 +9,7 @@ const scoreSchema = new mongoose.Schema({
       },
     admissionNumber: String,
     student_name: String,
+    programme: String,
     scores:[{
       sessionName: String,
       className: String,

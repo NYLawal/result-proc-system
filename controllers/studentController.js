@@ -144,6 +144,7 @@ const getStudentsByClass = async (req, res, next) => {
     let serialno = (pageSize * pageNumber) - (pageSize - (i + 1))
     studentsperpage[i].serialNo = serialno;
   }
+ 
   res
     .status(200)
     .json({ status: "Success", students, studentsperpage, noOfStudents, page: pageNumber, pgnum });
