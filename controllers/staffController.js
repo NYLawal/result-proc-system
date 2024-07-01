@@ -175,10 +175,11 @@ const updateStaff = async (req, res, next) => {
   const { error } = updateStaffValidator(req.body);
   if (error) throw error;
  const userRole = req.body.role;
+ const otherRole = req.body.other_role;
   
   const { email } = req.body;
 
-  const user = await User.findOneAndUpdate({ email: req.body.email }, { userRole }, {
+  const user = await User.findOneAndUpdate({ email: req.body.email }, { userRole }, {otherRole}, {
     new: true,
   });
   if (!user) throw new NotFoundError("Error: This staff is not registered. They need to sign up before their details can be updated");

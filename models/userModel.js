@@ -22,7 +22,8 @@ const userSchema = new mongoose.Schema(
     userRole: {
       type: String,
       default: "user",
-      lowercase: true
+      lowercase: true,
+      trim:true
     },
     isAdmin: {
         type: Boolean,
@@ -30,7 +31,9 @@ const userSchema = new mongoose.Schema(
     },
     otherRole:{
       type: String,
-      lowercase: true
+      default: "nil",
+      lowercase: true,
+      trim:true
     }
   },
   { timestamps: true }

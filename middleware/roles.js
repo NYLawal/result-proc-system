@@ -30,6 +30,12 @@ function teacher(req,res,next){
     if (role !== "teacher") throw new AccessDeniedError("Error: You are not authorised to perform this action!")
     next()
 }
+function parentORstudent(req,res,next){
+    const role = req.user.role
+    const otherrole = req.user.other_role
+    if (role != "parent" && otherrole != "parent" && role != "student" ) throw new AccessDeniedError("Error: You are not authorised to perform this action!")
+    next()
+}
 
 function student(req,res,next){
     const role = req.user.role
@@ -38,13 +44,5 @@ function student(req,res,next){
 }
 
 
-module.exports = {admin, superAdmin, adminORteacher, teacher, student, adminORteacherORparent}
+module.exports = {admin, superAdmin, adminORteacher, teacher, student, adminORteacherORparent, parentORstudent}
 
-// function authRole(role) {
-//     return (req, res, next) => {
-//       if (req.user.role !== role) {
-//         res.status(401);
-//         return res.send("not allowed");
-//       }
-//       next();
-//     };

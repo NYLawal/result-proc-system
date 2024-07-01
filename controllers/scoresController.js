@@ -243,7 +243,7 @@ const getScores = async (req, res, next) => {
   if (!isStudent) {
     return next(new Error("Error: no such student found"));
   }
-  if ((req.user.role == "parent" && req.user.email != isStudent.parentEmail) || (req.user.other_role == "parent" && req.user.role != 'teacher')) {
+  if ((req.user.role == "parent" && req.user.email != isStudent.parentEmail) || (req.user.other_role == "parent" && req.user.role == 'teacher' && req.user.email != isStudent.parentEmail)) {
     throw new BadUserRequestError("Error: you do not have access to this result. Input your ward's admission number");
   }
   const alreadyHasScores = await Score.findOne({ studentId: isStudent._id })
@@ -381,7 +381,7 @@ const promoteStudents = async (req, res, next) => {
     return next(new Error("Error: no scores recorded"));
   }
   const passed = scores.
-    res.status(200).json({ status: "success", scores, msg: "scores returned successfully!" });
+    res.status(200).json({ status: "success", scores, message: "scores returned successfully!" });
 };
 
 

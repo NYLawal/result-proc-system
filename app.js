@@ -14,6 +14,7 @@ const scoreRouter = require('./routers/scoreRouter');
 const classRouter = require('./routers/classRouter');
 const homeRouter = require('./routers/homeRouter');
 const userRouter = require('./routers/userRouter');
+const assessmentRouter = require('./routers/assessmentRouter');
 const errorHandler= require('./middleware/errorHandler')
 const morgan = require('morgan')
 const express = require('express');
@@ -50,6 +51,7 @@ app.use('/api/v1/user', userRouter )
 app.use('/api/v1/student', studentRouter )
 app.use('/api/v1/scores', scoreRouter )
 app.use('/api/v1/class', classRouter )
+app.use('/api/v1/assessment', assessmentRouter )
 app.use(errorHandler)
 
  const port = process.env.PORT || 5000
