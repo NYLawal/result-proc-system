@@ -253,15 +253,22 @@ const getScores = async (req, res, next) => {
     let result = alreadyHasScores.scores
     for (let count = 0; count < result.length; count++) {
       if (sessionName == result[count].sessionName) {
+        let className = result[count].className
+        //check for the class details
+        let classmatch = await sClass.findOne({className})
+        let maxAttendance = classmatch.maxAttendance
+        let noInClass = classmatch.noInClass
+        //check for term scores
         for (let termcount = 0; termcount < result[count].term.length; termcount++) {
           if (termName == result[count].term[termcount].termName) {
             let firstTermScore = []
             let secondTermScore = []
-            attendance = result[count].term[termcount].attendance
-            comment = result[count].term[termcount].comment
-            grandTotal = result[count].term[termcount].grandTotal
-            marksObtained = result[count].term[termcount].marksObtained
-            avgPercentage = result[count].term[termcount].avgPercentage
+            let attendance = result[count].term[termcount].attendance
+            let comment = result[count].term[termcount].comment
+            let ameedComment = result[count].term[termcount].ameedComment
+            let grandTotal = result[count].term[termcount].grandTotal
+            let marksObtained = result[count].term[termcount].marksObtained
+            let avgPercentage = result[count].term[termcount].avgPercentage
             let report = result[count].term[termcount].subjects
 
             if (termName == 'third') {
@@ -282,7 +289,8 @@ const getScores = async (req, res, next) => {
                 else secondTermScore[subjectcount] = 0
               }
             }
-            return res.status(200).json({ status: "success", message: `${alreadyHasScores.student_name}`, termName, report, comment, grandTotal, marksObtained, avgPercentage, firstTermScore, secondTermScore, attendance });
+            return res.status(200).json({ status: "success", message: `${alreadyHasScores.student_name}`, termName, className, sessionName, report, comment, grandTotal, marksObtained, avgPercentage, 
+              firstTermScore, secondTermScore, attendance, maxAttendance, noInClass, ameedComment });
           }
         }
       }

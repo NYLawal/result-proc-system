@@ -27,6 +27,7 @@ const scoreSchema = new mongoose.Schema({
             remark: String,
           }],
           comment: String,
+          ameedComment: String,
           grandTotal:Number,
           marksObtained:Number,
           avgPercentage:Number,
