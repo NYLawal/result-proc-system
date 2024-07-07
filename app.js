@@ -6,6 +6,7 @@ const Joi = require("joi");
 Joi.objectId = require('joi-objectid')(Joi);
 const jwt = require('jsonwebtoken')
 const cors = require('cors');
+const multer = require('multer') 
 
 const connectDB = require('./db/connect')
 const staffRouter = require('./routers/staffRouter');
@@ -22,7 +23,6 @@ const app = express();
 
 app.set('view-engine', 'pug')
 app.set('views', './views')
-
 
 app.use(express.json());
 app.use(express.urlencoded({extended:true}))

@@ -20,7 +20,10 @@ const classSchema = new mongoose.Schema({
         default:26,
         maxlength:[2, 'attendance cannot be more than 2 characters']
         },    
-
+    teacherSignature:{
+        type: String,
+        trim:true,
+    }
     })
 
     module.exports = mongoose.model('Class', classSchema)

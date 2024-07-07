@@ -13,31 +13,32 @@ const { addStudent } = require("./studentController");
 
 
 const addTermComment = async (req, res, next) => {
-  const { error } = addCommentValidation(req.body);
-  if (error) throw error;
+  const { admNo, sessionName, termName } = req.query;
+  const { ameedComment  } = req.body;
 
-  const { admNo } = req.query;
-  const { comment, sessionName, className, termName } = req.body
-
-  // check whether details match any student of the school
-  const isStudent = await Student.findOne({ admNo });
+  const isStudent = await Student.findOne({ admNo })
+  // check whether student exists in the scores database. if not, return error message
   if (!isStudent) {
-    throw new BadUserRequestError("Error: No student with this admission number exists");
+    return next(new Error("Error: no such student found"));
   }
-  const toaddcomment = await Score.findOne({ admissionNumber: admNo })
-  if (!toaddcomment) throw new NotFoundError("Error: Student not found!");
+  const alreadyHasScores = await Score.findOne({ studentId: isStudent._id })
 
-  for (let count = 0; count < toaddcomment.scores.length; count++) {
-    if (toaddcomment.scores[count].sessionName == sessionName && toaddcomment.scores[count].className == className) {
-      for (let termcount = 0; termcount < toaddcomment.scores[count].term.length; termcount++) {
-        if (toaddcomment.scores[count].term[termcount].termName == termName) {
-          toaddcomment.scores[count].term[termcount].comment = comment
-          toaddcomment.save()
+  if (!alreadyHasScores) throw new NotFoundError("Error: no scores registered for this student");
+  else { // if yes, return all for the student in the session and year queried
+    let result = alreadyHasScores.scores
+    for (let count = 0; count < result.length; count++) {
+      if (sessionName == result[count].sessionName) {
+        //check for term
+        for (let termcount = 0; termcount < result[count].term.length; termcount++) {
+          if (termName == result[count].term[termcount].termName) {
+            result[count].term[termcount].ameedComment = ameedComment  
+            alreadyHasScores.save()  
+          }
         }
       }
     }
   }
-  res.status(201).json({ status: "success", toaddcomment, message: "Comment added successfully" });
+  res.status(201).json({ status: "success", message: "Comment added successfully" });
 }
 
 
@@ -243,7 +244,8 @@ const getScores = async (req, res, next) => {
   if (!isStudent) {
     return next(new Error("Error: no such student found"));
   }
-  if ((req.user.role == "parent" && req.user.email != isStudent.parentEmail) || (req.user.other_role == "parent" && req.user.role == 'teacher' && req.user.email != isStudent.parentEmail)) {
+  if (req.user.role == "parent" ) {
+   if(req.user.email != isStudent.parentEmail)
     throw new BadUserRequestError("Error: you do not have access to this result. Input your ward's admission number");
   }
   const alreadyHasScores = await Score.findOne({ studentId: isStudent._id })
@@ -258,6 +260,7 @@ const getScores = async (req, res, next) => {
         let classmatch = await sClass.findOne({className})
         let maxAttendance = classmatch.maxAttendance
         let noInClass = classmatch.noInClass
+        let teacherSignature = classmatch.teacherSignature
         //check for term scores
         for (let termcount = 0; termcount < result[count].term.length; termcount++) {
           if (termName == result[count].term[termcount].termName) {
@@ -290,7 +293,7 @@ const getScores = async (req, res, next) => {
               }
             }
             return res.status(200).json({ status: "success", message: `${alreadyHasScores.student_name}`, termName, className, sessionName, report, comment, grandTotal, marksObtained, avgPercentage, 
-              firstTermScore, secondTermScore, attendance, maxAttendance, noInClass, ameedComment });
+              firstTermScore, secondTermScore, attendance, maxAttendance, noInClass, ameedComment, teacherSignature });
           }
         }
       }

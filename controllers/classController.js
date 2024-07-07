@@ -1,9 +1,102 @@
+
 const sClass = require("../models/classModel");
 const { MailNotSentError, BadUserRequestError, NotFoundError, UnAuthorizedError } =
   require('../middleware/errors')
 
 const { addStudent } = require("./studentController");
 const { model } = require("mongoose");
+
+const multer = require("multer"); // multer will be used to handle the form data.
+const aws = require("aws-sdk");
+const multerS3 = require("multer-s3");
+// const _ = require("lodash");
+const {
+  S3Client,
+  HeadObjectCommand,
+  DeleteObjectCommand,
+  PutObjectCommand,
+} = require("aws-sdk");
+// user-defined modules
+
+// const s3Client = new S3Client({
+//   region: process.env.S3_BUCKET_REGION,
+//   credentials: {
+//     accessKeyId: process.env.S3_ACCESS_KEY,
+//     secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+//   },
+// });
+
+const s3 = new aws.S3({
+  accessKeyId: process.env.S3_ACCESS_KEY,
+  region: process.env.S3_BUCKET_REGION,
+  secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+});
+
+const upload = () =>
+  multer({
+    storage: multerS3({
+      s3,
+      bucket: process.env.S3_BUCKET_NAME,
+      // acl: 'public-read',
+      metadata: function (req, file, cb) {
+        cb(null, { fieldName: file.fieldname });
+      },
+      key: function (req, file, cb) {
+        // const fileName = "img" + Date.now() + "_" + file.originalname;
+        const fileName = "img" + file.originalname;
+        cb(null, fileName);
+      },
+    }),
+    fileFilter: (req, file, cb) => {
+      if (
+        file.mimetype == "image/png" ||
+        file.mimetype == "image/jpg" ||
+        file.mimetype == "image/jpeg"
+      ) {
+        cb(null, true);
+      } else return cb(new BadUserRequestError("Invalid file type"));
+    },
+  });
+
+const uploadImg = async (req, res, next) => {
+  console.log(req.body)
+  const uploadSingle = upload().single("signatureImage");
+  uploadSingle(req, res, async (err) => {
+    if (err instanceof multer.MulterError) {
+      return res.status(404).end("file exceeds accepted standard!");
+    } else if (err) {
+      return res.status(404).end(err.message);
+    } else if (!req.file) {
+      return res.status(404).end("File is required!");
+    }
+    // if image uploads successfully, get url of image and pass to the next middleware
+    req.signature_url = req.file.location;
+    next();
+  });
+};
+
+const addDetails = async (req, res, next) => {
+  console.log("now here")
+  const { noInClass } = req.body;
+  const {className, programme} = req.query;
+  const classExists = await sClass.findOne({
+    $and:
+    [
+      {className},
+      {programme}
+    ]
+  })
+  if (!classExists) throw new NotFoundError("Error: the requested class does not exist");
+    classExists.noInClass = noInClass 
+    classExists.teacherSignature = req.signature_url, //coming from the uploadImg middleware
+    classExists.save()
+
+  res.status(200).json({
+    status: "Success",
+    message: "details added successfully",
+    classExists
+  });
+};
 
 const getClassSubjects = async (req, res, next) => {
   const {className, programme} = req.query;
@@ -67,4 +160,4 @@ throw new BadUserRequestError(`Error: ${subject} does not exist as a subject for
 
 
 
-module.exports = {getClassSubjects, addClassSubject, removeClassSubject}
+module.exports = {getClassSubjects, addClassSubject, removeClassSubject, uploadImg, addDetails}

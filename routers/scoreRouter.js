@@ -12,7 +12,7 @@ router.route('/viewTermlyScores').get([authenticateUser, adminORteacherORparent]
 router.route('/viewScoresbySession').get([authenticateUser, adminORteacherORparent], getScoresBySession)
 router.route('/viewClassScores').get([authenticateUser, adminORteacher], getClassScores)
 router.route('/updateScores').patch([authenticateUser, adminORteacher], updateScores)
-router.route('/addComment').patch([authenticateUser, adminORteacher], addTermComment)
+router.route('/addComment').patch([authenticateUser, admin], addTermComment)
 router.route('/markAttendance').patch([authenticateUser, adminORteacher], markAttendance)
 // .get(getScores)
 
