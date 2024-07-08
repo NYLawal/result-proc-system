@@ -1,7 +1,9 @@
 // const dbDebugger = require("debug")("app:db");
 const Student = require("../models/studentModel");
+const Staff = require("../models/staffModel");
 const Score = require("../models/scoreModel");
 const sClass = require("../models/classModel");
+const CardDetails = require("../models/carddetailsModel");
 const { MailNotSentError, BadUserRequestError, NotFoundError, UnAuthorizedError } =
   require('../middleware/errors')
 const {
@@ -244,9 +246,17 @@ const getScores = async (req, res, next) => {
   if (!isStudent) {
     return next(new Error("Error: no such student found"));
   }
-  if (req.user.role == "parent" ) {
+  if (req.user.role == "parent") {
    if(req.user.email != isStudent.parentEmail)
     throw new BadUserRequestError("Error: you do not have access to this result. Input your ward's admission number");
+  }
+  if (req.user.other_role == "parent") {
+    const isSameClass = await Staff.findOne({email : req.user.email})
+    console.log(isSameClass.teacherClass)
+    console.log(isSameClass)
+    console.log(isStudent.presentClass)
+   if(isSameClass.teacherClass != isStudent.presentClass && req.user.email != isStudent.parentEmail)
+    throw new BadUserRequestError("Error: you do not have access to this result. You're only able to view the results of your ward(s) or your students");
   }
   const alreadyHasScores = await Score.findOne({ studentId: isStudent._id })
 
@@ -258,7 +268,6 @@ const getScores = async (req, res, next) => {
         let className = result[count].className
         //check for the class details
         let classmatch = await sClass.findOne({className})
-        let maxAttendance = classmatch.maxAttendance
         let noInClass = classmatch.noInClass
         let teacherSignature = classmatch.teacherSignature
         //check for term scores
@@ -292,8 +301,13 @@ const getScores = async (req, res, next) => {
                 else secondTermScore[subjectcount] = 0
               }
             }
+            let reportcarddetails = await CardDetails.findOne({})
+            let maxAttendance = reportcarddetails.maxAttendance
+            let nextTermDate = reportcarddetails.nextTermDate
+            let principalSign = reportcarddetails.principalSignature
+            let proprietorSign = reportcarddetails.proprietorSignature
             return res.status(200).json({ status: "success", message: `${alreadyHasScores.student_name}`, termName, className, sessionName, report, comment, grandTotal, marksObtained, avgPercentage, 
-              firstTermScore, secondTermScore, attendance, maxAttendance, noInClass, ameedComment, teacherSignature });
+              firstTermScore, secondTermScore, attendance, maxAttendance, noInClass, ameedComment, teacherSignature, principalSign, proprietorSign, nextTermDate });
           }
         }
       }

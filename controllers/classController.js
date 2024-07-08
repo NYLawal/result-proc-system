@@ -1,5 +1,6 @@
 
 const sClass = require("../models/classModel");
+const CardDetails = require("../models/carddetailsModel");
 const { MailNotSentError, BadUserRequestError, NotFoundError, UnAuthorizedError } =
   require('../middleware/errors')
 
@@ -76,7 +77,6 @@ const uploadImg = async (req, res, next) => {
 };
 
 const addDetails = async (req, res, next) => {
-  console.log("now here")
   const { noInClass } = req.body;
   const {className, programme} = req.query;
   const classExists = await sClass.findOne({
@@ -95,6 +95,46 @@ const addDetails = async (req, res, next) => {
     status: "Success",
     message: "details added successfully",
     classExists
+  });
+};
+
+const addPrincipalSignature = async (req, res, next) => {
+  const detailsExist = await CardDetails.findOne({})  
+    if (!detailsExist){
+      const addDetails = await CardDetails.create({principalSignature:req.signature_url})
+      return res.status(201).json({
+        status: "Success",
+        message: "principal signature added successfully",
+        addDetails
+      });
+      }
+      detailsExist.principalSignature = req.signature_url;
+      detailsExist.save();
+      
+      res.status(200).json({
+        status: "Success",
+        message: "principal signature updated successfully",
+        detailsExist
+  });
+};
+
+const addProprietorSignature = async (req, res, next) => {
+  const detailsExist = await CardDetails.findOne({})  
+    if (!detailsExist){
+      const addDetails = await CardDetails.create({proprietorSignature:req.signature_url})
+      return res.status(201).json({
+        status: "Success",
+        message: "proprietor signature added successfully",
+        addDetails
+      });
+      }
+      detailsExist.proprietorSignature = req.signature_url;
+      detailsExist.save();
+      
+      res.status(200).json({
+        status: "Success",
+        message: "{proprietor signature updated successfully",
+        detailsExist
   });
 };
 
@@ -160,4 +200,4 @@ throw new BadUserRequestError(`Error: ${subject} does not exist as a subject for
 
 
 
-module.exports = {getClassSubjects, addClassSubject, removeClassSubject, uploadImg, addDetails}
+module.exports = {getClassSubjects, addClassSubject, removeClassSubject, uploadImg, addDetails, addPrincipalSignature, addProprietorSignature}

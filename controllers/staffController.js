@@ -6,7 +6,7 @@ const bcrypt = require('bcrypt')
 const crypto = require('crypto');
 const User = require("../models/userModel");
 const Staff = require("../models/staffModel");
-const Student = require("../models/studentModel");
+const CardDetails = require("../models/carddetailsModel");
 const Token = require('../models/tokenModel')
 
 const {
@@ -48,12 +48,12 @@ const addStaff = async (req, res) => {
 }
 
 // check if page returned is the last
-function getEndOfPage(staffNum, pgSize){
+function getEndOfPage(staffNum, pgSize) {
   let lastpage;
-  const wholediv =  Math.floor(staffNum / pgSize) ;
-  const modulus =  staffNum % pgSize ;
+  const wholediv = Math.floor(staffNum / pgSize);
+  const modulus = staffNum % pgSize;
   if (modulus == 0) lastpage = wholediv;
-  else lastpage = wholediv+1;
+  else lastpage = wholediv + 1;
   // console.log(lastpage)
   return lastpage
 }
@@ -65,26 +65,26 @@ const getStaff = async (req, res, next) => {
   const staff = await Staff.find({})
     .sort({ gender: -1 })
     .select('_id stafferName email gender address phoneNumber role isAdmin')
-    if (!staff) throw new NotFoundError("Error: no staff found");
+  if (!staff) throw new NotFoundError("Error: no staff found");
   const noOfStaff = staff.length;
 
   const staffperpage = await Staff.find()
-  .sort({ role: 1 })
-  .skip((pageNumber - 1) * pageSize)
-  .limit(pageSize);
+    .sort({ role: 1 })
+    .skip((pageNumber - 1) * pageSize)
+    .limit(pageSize);
 
   const pgnum = getEndOfPage(noOfStaff, pageSize)
 
-  for (let i=0; i<staffperpage.length; i++){  
-    let serialno= (pageSize*pageNumber)-(pageSize-(i+1))
-    staffperpage[i].serialNo=serialno;
+  for (let i = 0; i < staffperpage.length; i++) {
+    let serialno = (pageSize * pageNumber) - (pageSize - (i + 1))
+    staffperpage[i].serialNo = serialno;
   }
 
   res.status(200).json({
     status: "Success",
     staff_list: staffperpage,
     noOfStaff,
-    page:pageNumber, 
+    page: pageNumber,
     pgnum
   });
 };
@@ -101,22 +101,22 @@ const getTeachers = async (req, res, next) => {
   const noOfStaff = teachers.length;
 
   const teachersperpage = await Staff.find({ role: "teacher" })
-  .sort({ gender: 1 })
-  .skip((pageNumber - 1) * pageSize)
-  .limit(pageSize);
+    .sort({ gender: 1 })
+    .skip((pageNumber - 1) * pageSize)
+    .limit(pageSize);
 
   const pgnum = getEndOfPage(noOfStaff, pageSize)
 
-  for (let i=0; i<teachersperpage.length; i++){  
-    let serialno= (pageSize*pageNumber)-(pageSize-(i+1))
-    teachersperpage[i].serialNo=serialno;
+  for (let i = 0; i < teachersperpage.length; i++) {
+    let serialno = (pageSize * pageNumber) - (pageSize - (i + 1))
+    teachersperpage[i].serialNo = serialno;
   }
 
   res.status(200).json({
     status: "Success",
     teachers_list: teachersperpage,
     noOfStaff,
-    page:pageNumber,
+    page: pageNumber,
     pgnum
   });
 };
@@ -124,7 +124,7 @@ const getTeachers = async (req, res, next) => {
 
 const getTeacherClass = async (req, res, next) => {
   // const teacher = await Staff.findOne({$and: [{email:req.user.email}, {role:"teacher"}]})
-  const teacher = await Staff.findOne({email:req.user.email})
+  const teacher = await Staff.findOne({ email: req.user.email })
     .select('teacherClass teacherProgramme')
 
   if (!teacher) throw new NotFoundError("Error: You have not been assigned as a teacher");
@@ -137,8 +137,8 @@ const getTeacherClass = async (req, res, next) => {
 
 const assignAsTeacher = async (req, res, next) => {
   // const teacher = await Staff.findOne({$and: [{email:req.user.email}, {role:"teacher"}]})
-  const {email, teacherClass, teacherProgramme} = req.body
-  const teacher = await Staff.findOne({email})
+  const { email, teacherClass, teacherProgramme } = req.body
+  const teacher = await Staff.findOne({ email })
   if (!teacher) throw new NotFoundError("Error: no such staff found");
 
   teacher.teacherClass = teacherClass;
@@ -157,11 +157,11 @@ const editStaffQuery = async (req, res, next) => {
   if (error) throw error;
 
   let { email } = req.body;
-  const staffer = await Staff.findOne({email }) 
-    // $and: [
-    // {email }, 
-    // {stafferName: {$regex: "stafferName", $options: "i"} },
-    // ],
+  const staffer = await Staff.findOne({ email })
+  // $and: [
+  // {email }, 
+  // {stafferName: {$regex: "stafferName", $options: "i"} },
+  // ],
   // });
   if (!staffer) throw new NotFoundError("Error: no such staffer found");
 
@@ -174,18 +174,18 @@ const editStaffQuery = async (req, res, next) => {
 const updateStaff = async (req, res, next) => {
   const { error } = updateStaffValidator(req.body);
   if (error) throw error;
- const userRole = req.body.role;
- const otherRole = req.body.other_role;
-  
+  const userRole = req.body.role;
+  const otherRole = req.body.other_role;
+
   const { email } = req.body;
 
-  const user = await User.findOneAndUpdate({ email: req.body.email }, { userRole }, {otherRole}, {
+  const user = await User.findOneAndUpdate({ email: req.body.email }, { userRole }, { otherRole }, {
     new: true,
   });
   if (!user) throw new NotFoundError("Error: This staff is not registered. They need to sign up before their details can be updated");
 
-  const staffer = await Staff.findOneAndUpdate({ email }, req.body, {new: true}) 
-    if (!staffer) throw new NotFoundError("Error: the staffer does not exist");
+  const staffer = await Staff.findOneAndUpdate({ email }, req.body, { new: true })
+  if (!staffer) throw new NotFoundError("Error: the staffer does not exist");
 
   res
     .status(200)
@@ -196,15 +196,38 @@ const updateStaff = async (req, res, next) => {
 const deleteStaff = async (req, res, next) => {
   const { error } = deleteStaffValidator(req.body);
   if (error) throw error;
-  
+
   let { email } = req.body;
   const staff = await Staff.findOneAndDelete({ email });
   if (!staff) throw new NotFoundError("Error: no such staff found");
 
   const user = await User.findOneAndDelete({ email });
   if (!user) throw new NotFoundError("Error: This user is not yet registered, but has been removed as a staffer");
-  
+
   res.status(200).json({ status: "success", message: "Staff has been deleted" });
 };
 
-module.exports = { addStaff, getStaff, getTeachers, getTeacherClass, assignAsTeacher, editStaffQuery, updateStaff, deleteStaff }
+const setDetails = async (req, res, next) => {
+  const { maxAttendance, nextTermDate } = req.body;
+  console.log(req.body)
+  const detailsExist = await CardDetails.findOne({})
+  if (!detailsExist){
+  const addDetails = await CardDetails.create(req.body)
+  return res.status(201).json({
+    status: "Success",
+    message: "details added successfully",
+    addDetails
+  });
+  }
+  detailsExist.maxAttendance = maxAttendance;
+  detailsExist.nextTermDate = nextTermDate;
+  detailsExist.save();
+
+  res.status(200).json({
+    status: "Success",
+    message: "details updated successfully",
+    detailsExist
+  });
+};
+
+module.exports = { addStaff, getStaff, getTeachers, getTeacherClass, assignAsTeacher, editStaffQuery, updateStaff, deleteStaff,setDetails }
