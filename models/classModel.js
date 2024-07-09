@@ -15,11 +15,6 @@ const classSchema = new mongoose.Schema({
         type: Number,
         maxlength:[3, 'please check the number you entered']
         },
-    maxAttendance:{
-        type: Number,
-        default:26,
-        maxlength:[2, 'attendance cannot be more than 2 characters']
-        },    
     teacherSignature:{
         type: String,
         trim:true,
