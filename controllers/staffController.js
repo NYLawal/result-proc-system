@@ -208,11 +208,12 @@ const deleteStaff = async (req, res, next) => {
 };
 
 const setDetails = async (req, res, next) => {
+  const {programme} = req.query;
   const { maxAttendance, nextTermDate } = req.body;
-  console.log(req.body)
-  const detailsExist = await CardDetails.findOne({})
+  
+  const detailsExist = await CardDetails.findOne({programme})
   if (!detailsExist){
-  const addDetails = await CardDetails.create(req.body)
+  const addDetails = await CardDetails.create({...req.body, programme})
   return res.status(201).json({
     status: "Success",
     message: "details added successfully",

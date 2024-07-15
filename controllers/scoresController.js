@@ -252,11 +252,13 @@ const getScores = async (req, res, next) => {
   }
   if (req.user.other_role == "parent") {
     const isSameClass = await Staff.findOne({email : req.user.email})
-    console.log(isSameClass.teacherClass)
-    console.log(isSameClass)
-    console.log(isStudent.presentClass)
    if(isSameClass.teacherClass != isStudent.presentClass && req.user.email != isStudent.parentEmail)
     throw new BadUserRequestError("Error: you do not have access to this result. You're only able to view the results of your ward(s) or your students");
+  }
+  if (req.user.role == "student") {
+    const isValidStudent = await Student.findOne({email : req.user.email})
+   if(admNo != isValidStudent.admNo)
+    throw new BadUserRequestError("Error: you do not have access to this result. Input your admission number.");
   }
   const alreadyHasScores = await Score.findOne({ studentId: isStudent._id })
 

@@ -2,6 +2,10 @@ const mongoose = require('mongoose')
 
 
 const carddetailSchema = new mongoose.Schema({
+    programme: {
+        type: String,
+        trim:true,
+    },
     maxAttendance:{
         type: Number,
         trim:true,

@@ -7,7 +7,7 @@ const {admin, teacher, adminORteacher, adminORteacherORparent} = require('../mid
 
 
 router.route('/addScores').post([authenticateUser, adminORteacher], addScores)
-router.route('/viewScores').get([authenticateUser, adminORteacherORparent], getScores)
+router.route('/viewScores').get([authenticateUser], getScores)
 router.route('/viewTermlyScores').get([authenticateUser, adminORteacherORparent], getTermlyScores)
 router.route('/viewScoresbySession').get([authenticateUser, adminORteacherORparent], getScoresBySession)
 router.route('/viewClassScores').get([authenticateUser, adminORteacher], getClassScores)

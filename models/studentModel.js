@@ -38,11 +38,11 @@ const studentSchema = new mongoose.Schema({
   entryClass: {
     type: String,
     required: [true, "entry class cannot be empty"],
-    enum: {
-      values: ["tamyidi", "rawdoh", "adonah", "awwal ibtidaahi", "thaani ibtidaahi", "thaalith ibtidaahi", "raabi ibtidaahi", 
-      "khaamis ibtidaahi", "awwal idaadi", "thaani idaadi", "thaalith idaadi"],
-      message: "{VALUE} is not supported, input a valid entry class",
-    },
+    // enum: {
+    //   values: ["tamyidi", "rawdoh", "adonah", "awwal ibtidaahi", "thaani ibtidaahi", "thaalith ibtidaahi", "raabi ibtidaahi", 
+    //   "khaamis ibtidaahi", "awwal idaadi", "thaani idaadi", "thaalith idaadi"],
+    //   message: "{VALUE} is not supported, input a valid entry class",
+    // },
     lowercase: true,
   },
 
@@ -130,11 +130,6 @@ const studentSchema = new mongoose.Schema({
 
   presentClass: {
     type: String,
-    enum: {
-      values: ["tamyidi", "rawdoh", "adonah", "awwal ibtidaahi", "thaani ibtidaahi", "thaalith ibtidaahi", "raabi ibtidaahi", 
-      "khaamis ibtidaahi", "awwal idaadi", "thaani idaadi", "thaalith idaadi"],
-      message: "{VALUE} is not supported, input a valid class",
-    },
     lowercase: true,
   },
 

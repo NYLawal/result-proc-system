@@ -99,9 +99,10 @@ const addDetails = async (req, res, next) => {
 };
 
 const addPrincipalSignature = async (req, res, next) => {
-  const detailsExist = await CardDetails.findOne({})  
+  const {programme} = req.query
+  const detailsExist = await CardDetails.findOne({programme})  
     if (!detailsExist){
-      const addDetails = await CardDetails.create({principalSignature:req.signature_url})
+      const addDetails = await CardDetails.create({programme, principalSignature:req.signature_url})
       return res.status(201).json({
         status: "Success",
         message: "principal signature added successfully",
@@ -119,9 +120,10 @@ const addPrincipalSignature = async (req, res, next) => {
 };
 
 const addProprietorSignature = async (req, res, next) => {
-  const detailsExist = await CardDetails.findOne({})  
+  const {programme} = req.query
+  const detailsExist = await CardDetails.findOne({programme})  
     if (!detailsExist){
-      const addDetails = await CardDetails.create({proprietorSignature:req.signature_url})
+      const addDetails = await CardDetails.create({programme, proprietorSignature:req.signature_url})
       return res.status(201).json({
         status: "Success",
         message: "proprietor signature added successfully",
