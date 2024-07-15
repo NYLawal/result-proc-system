@@ -15,7 +15,7 @@ const authenticateUser = require('../middleware/auth')
 const {admin, adminORteacher} = require('../middleware/roles')
 
 
-router.route('/registerStudent').post([authenticateUser, admin], addStudent)
+router.route('/registerStudent').post([authenticateUser, adminORteacher], addStudent)
 router.route('/all/:page').get([authenticateUser, admin], getAllStudents)
 router.route('/byClass/:page').get([authenticateUser, adminORteacher], getStudentsByClass)
 router.route('/:page').get([authenticateUser, admin], getStudents)
