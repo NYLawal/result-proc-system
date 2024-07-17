@@ -8,6 +8,7 @@ const {addStudent,
        updateStudent,
        updateStatus,
        promoteStudents,
+       promoteOneStudent,
        deleteStudent,
        } 
        = require('../controllers/studentController')
@@ -23,6 +24,7 @@ router.route('/editStudent').post([authenticateUser, admin], editStudent)
 router.route('/updateStudent').patch([authenticateUser, admin], updateStudent)
 router.route('/updateStatus').patch([authenticateUser, admin], updateStatus)
 router.route('/promoteStudents').patch([authenticateUser, admin], promoteStudents)
+router.route('/promoteOneStudent').patch([authenticateUser, admin], promoteOneStudent)
 router.route('/').delete(deleteStudent)
 
 

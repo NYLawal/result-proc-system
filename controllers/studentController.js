@@ -42,7 +42,7 @@ function getEndOfPage(studNum, pgSize) {
 
 const getStudents = async (req, res, next) => {
   let pageNumber = +req.params.page || 1;
-  const pageSize = 5;
+  const pageSize = 10;
   let queryObject = req.query;
 
   const { admNo, firstName, lastName, gender, address, entryClass, stateOfOrigin, maritalStatus, programme, presentClass, classStatus, studentStatus, paymentStatus } = req.query;
@@ -117,7 +117,7 @@ const getStudents = async (req, res, next) => {
 
 const getStudentsByClass = async (req, res, next) => {
   let pageNumber = +req.params.page || 1;
-  const pageSize = 5;
+  const pageSize = 7;
 
   const teacher = await Staff.findOne({ email: req.user.email })
   const teacherClass = teacher.teacherClass
@@ -144,7 +144,6 @@ const getStudentsByClass = async (req, res, next) => {
     let serialno = (pageSize * pageNumber) - (pageSize - (i + 1))
     studentsperpage[i].serialNo = serialno;
   }
- 
   res
     .status(200)
     .json({ status: "Success", students, studentsperpage, noOfStudents, page: pageNumber, pgnum });
@@ -228,66 +227,71 @@ const updateStatus = async (req, res, next) => {
 
 
 const promoteStudents = async (req, res, next) => {
-  const { termName, sessionName } = req.body;
+  const { programme, sessionName, minscore } = req.body;
   const termRequest = await Score.find(
     {
       $and:
         [
+          { programme },
           { "scores.sessionName": sessionName },
-          { "scores.term.termName": termName },
+          { "scores.term.termName": "third" } 
         ]
     })
-  if (termRequest.length == 0) throw new NotFoundError("Error: this term has no registered scores");
+  if (termRequest.length == 0) throw new NotFoundError("Error: no registered scores found");
 
   console.log(termRequest.length)
   for (let i = 0; i < termRequest.length; i++) {
     const requestedsession = termRequest[i].scores.find(asession => asession.sessionName == sessionName)
-    const requestedterm = requestedsession.term.find(aterm => aterm.termName == termName)
+    const requestedterm = requestedsession.term.find(aterm => aterm.termName == "third")
     const avgpercent = requestedterm.avgPercentage
    
-    if (avgpercent < 50) {
+    if (avgpercent < minscore) {
       await Student.findOneAndUpdate({ admNo: termRequest[i].admissionNumber }, { classStatus: "repeated" }, { new: true })
     }
-    else if (avgpercent >= 50) {
+    else if (avgpercent >= minscore) {
       const student = await Student.findOne({ admNo: termRequest[i].admissionNumber })
 
       switch (student.presentClass) {
-        case "tamyidi":
-          student.presentClass = "adonah"
+        case "tamhidi":
+          student.presentClass = "hadoonah"
           break;
-        case "adonah":
+        case "hadoonah":
           student.presentClass = "rawdoh"
           break;
         case "rawdoh":
-          student.presentClass = "awwal ibtidaahi"
+          student.presentClass = "awwal ibtidaahiy"
           break;
-        case "awwal ibtidaahi":
-          student.presentClass = "thaani ibtidaahi"
+        case "awwal ibtidaahiy":
+          student.presentClass = "thaani ibtidaahiy"
           break;
-        case "thaani ibtidaahi":
-          student.presentClass = "thaalith ibtidaahi"
+        case "thaani ibtidaahiy":
+          student.presentClass = "thaalith ibtidaahiy"
           break;
-        case "thaalith ibtidaahi":
-          student.presentClass = "raabi ibtidaahi"
+        case "thaalith ibtidaahiy":
+          student.presentClass = "raabi ibtidaahiy"
           break;
-        case "raabi ibtidaahi":
-          student.presentClass = "khaamis ibtidaahi"
+        case "raabi ibtidaahiy":
+          student.presentClass = "khaamis ibtidaahiy"
           break;
-        case "khaamis ibtidaahi":
-          student.presentClass = "awwal idaadi"
+        case "khaamis ibtidaahiy":
+          student.presentClass = "awwal idaadiy"
           break;
-        case "awwal idaadi":
-          student.presentClass = "thaani idaadi"
+        case "awwal idaadiy":
+          student.presentClass = "thaani idaadiy"
           break;
-        case "thaani idaadi":
-          student.presentClass = "thaalith idaadi"
+        case "thaani idaadiy":
+          student.presentClass = "thaalith idaadiy"
           break;
-        case "thaalith idaadi":
+        case "thaalith idaadiy":
           student.studentStatus = "past"
           break;
         // default:  
       }
-      student.classStatus = "promoted"
+      student.classStatus = "promoted";
+      if ((student.programme == "barnamij" || student.programme == "female madrasah") && student.presentClass == "thaalith idaadiy"){
+        student.studentStatus = "past";
+        student.presentClass = "thaani idaadiy"
+      }
       await student.save()
     }
 
@@ -295,12 +299,65 @@ const promoteStudents = async (req, res, next) => {
   res.status(200).json({ status: "success", message: "Students have been successfully promoted" });
 };
 
+const promoteOneStudent = async (req, res, next) => {
+  const { admNo } = req.body;
+  
+      const student = await Student.findOne({ admNo })
+      if (!student) throw new NotFoundError("Error: no such student found");
+
+      switch (student.presentClass) {
+        case "tamhidi":
+          student.presentClass = "hadoonah"
+          break;
+        case "hadoonah":
+          student.presentClass = "rawdoh"
+          break;
+        case "rawdoh":
+          student.presentClass = "awwal ibtidaahiy"
+          break;
+        case "awwal ibtidaahiy":
+          student.presentClass = "thaani ibtidaahiy"
+          break;
+        case "thaani ibtidaahiy":
+          student.presentClass = "thaalith ibtidaahiy"
+          break;
+        case "thaalith ibtidaahiy":
+          student.presentClass = "raabi ibtidaahiy"
+          break;
+        case "raabi ibtidaahiy":
+          student.presentClass = "khaamis ibtidaahiy"
+          break;
+        case "khaamis ibtidaahiy":
+          student.presentClass = "awwal idaadiy"
+          break;
+        case "awwal idaadiy":
+          student.presentClass = "thaani idaadiy"
+          break;
+        case "thaani idaadiy":
+          student.presentClass = "thaalith idaadiy"
+          break;
+        case "thaalith idaadiy":
+          student.studentStatus = "past"
+          break;
+        // default:  
+      }
+      student.classStatus = "promoted";
+      if ((student.programme == "barnamij" || student.programme == "female madrasah") && student.presentClass == "thaalith idaadiy"){
+        student.studentStatus = "past";
+        student.presentClass = "thaani idaadiy"
+      }
+      await student.save()
+
+  res.status(200).json({ status: "success", message: "Student has been successfully promoted" });
+};
+
+
 const deleteStudent = async (req, res, next) => {
   let { admNo } = req.query;
   const student = await Student.findOneAndDelete({ admNo });
   if (!student) return next(new Error("Error: no such student found"));
 
-  res.status(200).json({ status: "success", msg: "user deleted successfully" });
+  res.status(200).json({ status: "success", message: "user deleted successfully" });
 };
 
 
@@ -314,6 +371,7 @@ module.exports = {
   updateStudent,
   updateStatus,
   promoteStudents,
+  promoteOneStudent,
   deleteStudent,
 };
 

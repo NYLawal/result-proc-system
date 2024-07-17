@@ -8,7 +8,7 @@ function newStudentValidation(student) {
   const schema = Joi.object({
     admNo: Joi.string()
       .required()
-      .regex(/^MDRS+[0-9]{1,4}/)
+      .regex(/^MDRS+[0-9]{1,4}|^MDBR+[0-9]{1,4}|^MDUM+[0-9]{1,4}/)
       .messages({ "string.pattern.base": "invalid admission number" }),
     firstName: Joi.string()
       .required()
@@ -80,7 +80,7 @@ function editStudentValidation(student) {
   const schema = Joi.object({
     admNo: Joi.string()
       .required()
-      .regex(/^MDRS+[0-9]{1,4}/)
+      .regex(/^MDRS+[0-9]{1,4}|^MDBR+[0-9]{1,4}|^MDUM+[0-9]{1,4}/)
       .messages({ "string.pattern.base": "A valid admission number is required for the query" }),
 }).strict();
 
@@ -92,7 +92,7 @@ function updateStudentValidation(student) {
   const schema = Joi.object({
     admNo: Joi.string()
       .required()
-      .regex(/^MDRS+[0-9]{1,4}/)
+      .regex(/^MDRS+[0-9]{1,4}|^MDBR+[0-9]{1,4}|^MDUM+[0-9]{1,4}/)
       .messages({ "string.pattern.base": "invalid admission number" }),
     firstName: Joi.string()
       .required()

@@ -8,7 +8,7 @@ const studentSchema = new mongoose.Schema({
     unique:[true, "a student with this admission number already exists"],
     trim: true,
     maxlength: [10, "maximum characters for admission number is 10"],
-    match: [/^MDRS+[0-9]{1,4}/, "invalid admission number"],
+    match: [/^MDRS+[0-9]{1,4}|^MDBR+[0-9]{1,4}|^MDUM+[0-9]{1,4}/, "invalid admission number"],
   },
 
   firstName: {
@@ -50,7 +50,7 @@ const studentSchema = new mongoose.Schema({
     type: String,
     required: [true, "input a valid address"],
     minlength: [
-      20,
+      15,
       "too short for a proper address, please input the correct one",
     ],
   },
@@ -95,10 +95,10 @@ const studentSchema = new mongoose.Schema({
   programme: {
     type: String,
     required: [true, "programme cannot be empty"],
-    enum: {
-      values: ["children madrasah", "adult madrasah", "female madrasah", "barnomij"],
-      message: "{VALUE} is not supported, status can either be single or married",
-    },
+    // enum: {
+    //   values: ["children madrasah", "adult madrasah", "female madrasah", "barnamij"],
+    //   message: "{VALUE} is not supported",
+    // },
     default: "children madrasah",
     lowercase: true,
   },
