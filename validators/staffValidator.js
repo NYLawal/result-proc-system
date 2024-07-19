@@ -138,6 +138,14 @@ function updateStaffValidator(staffer) {
           "Staffer must have a valid role (superadmin, admin, bursar or teacher)"
         )
       ),
+    other_role: Joi.string()
+      .required()
+      .valid("admin","bursar","teacher","parent","student", "nil")
+      .error(
+        new ValidationError(
+          "Staffer must have a valid role (admin, bursar, parent, student, teacher or nil)"
+        )
+      ),
   }).strict()
 
   return schema.validate(staffer);

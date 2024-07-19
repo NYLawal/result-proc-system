@@ -158,16 +158,19 @@ const editStaffQuery = async (req, res, next) => {
 
   let { email } = req.body;
   const staffer = await Staff.findOne({ email })
+  if (!staffer) throw new NotFoundError("Error: no such staffer found");
+
+  const user = await User.findOne({ email })
+  if (!user) throw new NotFoundError("Error: This staff is not registered. They need to sign up before their details can be updated");
   // $and: [
   // {email }, 
   // {stafferName: {$regex: "stafferName", $options: "i"} },
   // ],
   // });
-  if (!staffer) throw new NotFoundError("Error: no such staffer found");
 
   res
     .status(200)
-    .json({ status: "success", message: "Staffer found", staffer });
+    .json({ status: "success", message: "Staffer found", staffer, user });
 };
 
 
