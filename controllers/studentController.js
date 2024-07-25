@@ -20,7 +20,7 @@ const addStudent = async (req, res, next) => {
 
   const theStudent = await Student.find({admNo: req.body.admNo })
   const isValidStaff = await Staff.find({ email: req.user.email })
-  if (isValidStaff.programme != theStudent.programme) {
+  if (isValidStaff.teacherProgramme != theStudent.programme) {
     throw new UnAuthorizedError("Error: Sorry, you are not allowed to add students of other programmes")
   }
 
@@ -235,7 +235,7 @@ const updateStatus = async (req, res, next) => {
 const promoteStudents = async (req, res, next) => {
   const { programme, sessionName, minscore } = req.body;
   const isValidStaff = await Staff.find({ email: req.user.email })
-  if (isValidStaff.programme != programme) {
+  if (isValidStaff.teacherProgramme != programme) {
     throw new UnAuthorizedError("Error: Sorry, you are not allowed to promote students of other programmes")
   }
   const termRequest = await Score.find(
@@ -311,7 +311,7 @@ const promoteStudents = async (req, res, next) => {
 
 const promoteOneStudent = async (req, res, next) => {
   const { admNo, programme } = req.body;
-  if (isValidStaff.programme != programme) {
+  if (isValidStaff.teacherProgramme != programme) {
     throw new UnAuthorizedError("Error: Sorry, you are not allowed to promote students of other programmes")
   }
   const student = await Student.findOne({ admNo })
