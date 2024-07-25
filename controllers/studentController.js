@@ -18,6 +18,12 @@ const addStudent = async (req, res, next) => {
   const { error } = newStudentValidation(req.body);
   if (error) throw error;
 
+  const theStudent = await Student.find({admNo: req.body.admNo })
+  const isValidStaff = await Staff.find({ email: req.user.email })
+  if (isValidStaff.programme != theStudent.programme) {
+    throw new UnAuthorizedError("Error: Sorry, you are not allowed to add students of other programmes")
+  }
+
   if (req.body.email !== "nothing@nil.com") {
     const emailExists = await Student.findOne({ email: req.body.email });
     if (emailExists) throw new BadUserRequestError("Error: An account with this email already exists");
@@ -217,7 +223,7 @@ const updateStudent = async (req, res, next) => {
 const updateStatus = async (req, res, next) => {
   let { admNo } = req.query;
   let nonStudentStatus = req.body.status
-  const student = await Student.findOneAndUpdate({ admNo }, {studentStatus: "past", nonStudentStatus}, { new: true })
+  const student = await Student.findOneAndUpdate({ admNo }, { studentStatus: "past", nonStudentStatus }, { new: true })
   if (!student) return next(new Error("Error: no such student found"));
 
   res
@@ -228,13 +234,17 @@ const updateStatus = async (req, res, next) => {
 
 const promoteStudents = async (req, res, next) => {
   const { programme, sessionName, minscore } = req.body;
+  const isValidStaff = await Staff.find({ email: req.user.email })
+  if (isValidStaff.programme != programme) {
+    throw new UnAuthorizedError("Error: Sorry, you are not allowed to promote students of other programmes")
+  }
   const termRequest = await Score.find(
     {
       $and:
         [
           { programme },
           { "scores.sessionName": sessionName },
-          { "scores.term.termName": "third" } 
+          { "scores.term.termName": "third" }
         ]
     })
   if (termRequest.length == 0) throw new NotFoundError("Error: no registered scores found");
@@ -244,7 +254,7 @@ const promoteStudents = async (req, res, next) => {
     const requestedsession = termRequest[i].scores.find(asession => asession.sessionName == sessionName)
     const requestedterm = requestedsession.term.find(aterm => aterm.termName == "third")
     const avgpercent = requestedterm.avgPercentage
-   
+
     if (avgpercent < minscore) {
       await Student.findOneAndUpdate({ admNo: termRequest[i].admissionNumber }, { classStatus: "repeated" }, { new: true })
     }
@@ -288,7 +298,7 @@ const promoteStudents = async (req, res, next) => {
         // default:  
       }
       student.classStatus = "promoted";
-      if ((student.programme == "barnamij" || student.programme == "female madrasah") && student.presentClass == "thaalith idaadiy"){
+      if ((student.programme == "barnamij" || student.programme == "female madrasah") && student.presentClass == "thaalith idaadiy") {
         student.studentStatus = "past";
         student.presentClass = "thaani idaadiy"
       }
@@ -300,53 +310,55 @@ const promoteStudents = async (req, res, next) => {
 };
 
 const promoteOneStudent = async (req, res, next) => {
-  const { admNo } = req.body;
-  
-      const student = await Student.findOne({ admNo })
-      if (!student) throw new NotFoundError("Error: no such student found");
+  const { admNo, programme } = req.body;
+  if (isValidStaff.programme != programme) {
+    throw new UnAuthorizedError("Error: Sorry, you are not allowed to promote students of other programmes")
+  }
+  const student = await Student.findOne({ admNo })
+  if (!student) throw new NotFoundError("Error: no such student found");
 
-      switch (student.presentClass) {
-        case "tamhidi":
-          student.presentClass = "hadoonah"
-          break;
-        case "hadoonah":
-          student.presentClass = "rawdoh"
-          break;
-        case "rawdoh":
-          student.presentClass = "awwal ibtidaahiy"
-          break;
-        case "awwal ibtidaahiy":
-          student.presentClass = "thaani ibtidaahiy"
-          break;
-        case "thaani ibtidaahiy":
-          student.presentClass = "thaalith ibtidaahiy"
-          break;
-        case "thaalith ibtidaahiy":
-          student.presentClass = "raabi ibtidaahiy"
-          break;
-        case "raabi ibtidaahiy":
-          student.presentClass = "khaamis ibtidaahiy"
-          break;
-        case "khaamis ibtidaahiy":
-          student.presentClass = "awwal idaadiy"
-          break;
-        case "awwal idaadiy":
-          student.presentClass = "thaani idaadiy"
-          break;
-        case "thaani idaadiy":
-          student.presentClass = "thaalith idaadiy"
-          break;
-        case "thaalith idaadiy":
-          student.studentStatus = "past"
-          break;
-        // default:  
-      }
-      student.classStatus = "promoted";
-      if ((student.programme == "barnamij" || student.programme == "female madrasah") && student.presentClass == "thaalith idaadiy"){
-        student.studentStatus = "past";
-        student.presentClass = "thaani idaadiy"
-      }
-      await student.save()
+  switch (student.presentClass) {
+    case "tamhidi":
+      student.presentClass = "hadoonah"
+      break;
+    case "hadoonah":
+      student.presentClass = "rawdoh"
+      break;
+    case "rawdoh":
+      student.presentClass = "awwal ibtidaahiy"
+      break;
+    case "awwal ibtidaahiy":
+      student.presentClass = "thaani ibtidaahiy"
+      break;
+    case "thaani ibtidaahiy":
+      student.presentClass = "thaalith ibtidaahiy"
+      break;
+    case "thaalith ibtidaahiy":
+      student.presentClass = "raabi ibtidaahiy"
+      break;
+    case "raabi ibtidaahiy":
+      student.presentClass = "khaamis ibtidaahiy"
+      break;
+    case "khaamis ibtidaahiy":
+      student.presentClass = "awwal idaadiy"
+      break;
+    case "awwal idaadiy":
+      student.presentClass = "thaani idaadiy"
+      break;
+    case "thaani idaadiy":
+      student.presentClass = "thaalith idaadiy"
+      break;
+    case "thaalith idaadiy":
+      student.studentStatus = "past"
+      break;
+    // default:  
+  }
+  student.classStatus = "promoted";
+  if ((student.programme == "barnamij" || student.programme == "female madrasah") && student.presentClass == "thaalith idaadiy") {
+    student.studentStatus = "past";
+    student.presentClass = "thaani idaadiy"
+  }
+  await student.save()
 
   res.status(200).json({ status: "success", message: "Student has been successfully promoted" });
 };
