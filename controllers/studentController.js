@@ -18,7 +18,7 @@ const addStudent = async (req, res, next) => {
   const { error } = newStudentValidation(req.body);
   if (error) throw error;
 
-  const isValidStaff = await Staff.find({ email: req.user.email })
+  const isValidStaff = await Staff.findOne({ email: req.user.email })
   if (isValidStaff.teacherProgramme != req.body.programme) {
     throw new UnAuthorizedError("Error: Sorry, you are not allowed to add students of other programmes")
   }

@@ -47,6 +47,7 @@ const addTermComment = async (req, res, next) => {
 const addScores = async (req, res, next) => {
   // const { error } = addScoresValidation(req.body);
   // if (error) throw error;
+  let termName = req.body.term.termName;
   const { admNo } = req.query
 
   // check whether details match any student of the school
@@ -57,16 +58,27 @@ const addScores = async (req, res, next) => {
   // check whether student exists in the scores database, if not, add their data
   const alreadyHasScores = await Score.findOne({ admissionNumber: admNo })
   if (!alreadyHasScores) {
+    if (req.body.term.termName == 'third') {
+      let noOfTerms = 1;
+      for (let subjectcount = 0; subjectcount < req.body.term.subjects.length; subjectcount++) {
+        req.body.term.subjects[subjectcount].cumulativeScore = +req.body.term.subjects[subjectcount].totalScore;
+        req.body.term.subjects[subjectcount].cumulativeAverage = +req.body.term.subjects[subjectcount].cumulativeScore / noOfTerms;
+
+        console.log(req.body.term.subjects[subjectcount].cumulativeScore)
+        console.log(req.body.term.subjects[subjectcount].cumulativeAverage)
+      }
+    }
     const addStudent = await Score.create({ ...req.body, studentId: isStudent._id, admissionNumber: isStudent.admNo, student_name: isStudent.firstName + " " + isStudent.lastName, programme: isStudent.programme });
+
     // calculate total and average percentage
     req.body.term.grandTotal = req.body.term.subjects.length * 100;
-    console.log("stage1 passed")
+    console.log("grandtotal added")
     req.body.term.marksObtained = req.body.term.subjects.reduce((accumulator, score) => {
       return accumulator += (+score.totalScore);
     }, 0)
-    console.log("stage2 passed")
+    console.log("marks obtained calculated")
     req.body.term.avgPercentage = (req.body.term.marksObtained / req.body.term.grandTotal) * 100
-    console.log("stage3passed", req.body.term.avgPercentage)
+    console.log("avg percentage done", req.body.term.avgPercentage)
 
     addStudent.scores.push(req.body)
     addStudent.save()
@@ -76,7 +88,8 @@ const addScores = async (req, res, next) => {
   // for existing session and term
   else {
     //check whether student has the subject's scores for the session and term specified
-    let termName = req.body.term.termName;
+    // let termName = req.body.term.termName;
+    console.log(req.body.term.termName)
     let sessionName = req.body.sessionName;
     for (let scorescount = 0; scorescount < alreadyHasScores.scores.length; scorescount++) {
       if (sessionName == alreadyHasScores.scores[scorescount].sessionName) {
@@ -90,13 +103,13 @@ const addScores = async (req, res, next) => {
             //if not third term
             if (req.body.term.termName != 'third') {
               req.body.term.grandTotal = req.body.term.subjects.length * 100;
-              console.log("stage1 passed", req.body.term.grandTotal)
+              console.log("grand total done", req.body.term.grandTotal)
               req.body.term.marksObtained = req.body.term.subjects.reduce((accumulator, score) => {
                 return accumulator += (+score.totalScore);
               }, 0)
-              console.log("stage2 passed", req.body.term.marksObtained)
+              console.log("marks obtained done", req.body.term.marksObtained)
               req.body.term.avgPercentage = (req.body.term.marksObtained / req.body.term.grandTotal) * 100
-              console.log("stage3passed", req.body.term.avgPercentage)
+              console.log("avg percent done", req.body.term.avgPercentage)
             }
             else {   //if third term
               let noOfTerms = 1;
@@ -122,7 +135,7 @@ const addScores = async (req, res, next) => {
 
                 console.log(firstTermScore[0])
                 console.log(secondTermScore[0])
-                if ((firstTermScore[0] != 0 && secondTermScore[0] == 0) || (secondTermScore[0] == 0 && firstTermScore[0] != 0)) noOfTerms = 2
+                if ((firstTermScore[0] != 0 && secondTermScore[0] == 0) || (firstTermScore[0] == 0 && secondTermScore[0] != 0)) noOfTerms = 2
                 else if (firstTermScore[0] != 0 && secondTermScore[0] != 0) noOfTerms = 3
                 console.log("number of terms ", noOfTerms)
 
@@ -134,13 +147,13 @@ const addScores = async (req, res, next) => {
               }
 
               req.body.term.grandTotal = req.body.term.subjects.length * 100;
-              console.log("stage1 passed", req.body.term.grandTotal)
+              console.log("third term grand total done", req.body.term.grandTotal)
               req.body.term.marksObtained = req.body.term.subjects.reduce((accumulator, subject) => {
                 return accumulator += (+subject.cumulativeAverage);
               }, 0)
-              console.log("stage2 passed", req.body.term.marksObtained)
+              console.log("third term marks obtained done", req.body.term.marksObtained)
               req.body.term.avgPercentage = (req.body.term.marksObtained / req.body.term.grandTotal) * 100
-              console.log("stage3passed", req.body.term.avgPercentage)
+              console.log("third term avg percent done", req.body.term.avgPercentage)
             }
 
             alreadyHasScores.scores[scorescount].term[termcount].subjects = [...req.body.term.subjects]
@@ -191,7 +204,7 @@ const addScores = async (req, res, next) => {
 
             console.log(firstTermScore[0])
             console.log(secondTermScore[0])
-            if ((firstTermScore[0] != 0 && secondTermScore[0] == 0) || (secondTermScore[0] == 0 && firstTermScore[0] != 0)) noOfTerms = 2
+            if ((firstTermScore[0] != 0 && secondTermScore[0] == 0) || (firstTermScore[0] == 0 && secondTermScore[0] != 0)) noOfTerms = 2
             else if (firstTermScore[0] != 0 && secondTermScore[0] != 0) noOfTerms = 3
             console.log("number of terms ", noOfTerms)
 
@@ -391,7 +404,7 @@ const getClassScores = async (req, res, next) => {
           { "scores.term.termName": termName },
         ]
     })
-    
+
   if (classExists.length == 0) throw new NotFoundError("Error: this class has no registered scores for the term/session specified");
 
   const classRequest = await sClass.findOne({
@@ -455,53 +468,53 @@ const updateScores = async (req, res, next) => {
                   alreadyHasScores.scores[scorescount].term[termcount].comment = req.body.term.comment
                 }
               }
-                if (req.body.term.termName == 'third') {   //if third term
-                  let noOfTerms = 1;
-                  let firstTermScore = [];
-                  let secondTermScore = [];
+              if (req.body.term.termName == 'third') {   //if third term
+                let noOfTerms = 1;
+                let firstTermScore = [];
+                let secondTermScore = [];
 
-                  const firstTerm = alreadyHasScores.scores[scorescount].term.find(aterm => aterm.termName == "first")
-                  const secondTerm = alreadyHasScores.scores[scorescount].term.find(aterm => aterm.termName == "second")
+                const firstTerm = alreadyHasScores.scores[scorescount].term.find(aterm => aterm.termName == "first")
+                const secondTerm = alreadyHasScores.scores[scorescount].term.find(aterm => aterm.termName == "second")
 
-                  if (firstTerm != undefined) {
-                    let matchSubject1st = firstTerm.subjects.find(asubject => asubject.subjectName == alreadyHasScores.scores[scorescount].term[termcount].subjects[subjectcount].subjectName)
-                    if (!matchSubject1st) firstTermScore[0] = 0;
-                    else firstTermScore[0] = matchSubject1st.totalScore
-                  }
-                  else firstTermScore[0] = 0;
-
-                  if (secondTerm != undefined) {
-                    let matchSubject2nd = secondTerm.subjects.find(asubject => asubject.subjectName == alreadyHasScores.scores[scorescount].term[termcount].subjects[subjectcount].subjectName)
-                    if (!matchSubject2nd) secondTermScore[0] = 0;
-                    else secondTermScore[0] = matchSubject2nd.totalScore
-                  }
-                  else secondTermScore[0] = 0
-
-                  console.log(firstTermScore[0])
-                  console.log(secondTermScore[0])
-                  console.log(alreadyHasScores.scores[scorescount].term[termcount].subjects[subjectcount].totalScore)
-                  if ((firstTermScore[0] != 0 && secondTermScore[0] == 0) || (secondTermScore[0] == 0 && firstTermScore[0] != 0)) noOfTerms = 2
-                  else if (firstTermScore[0] != 0 && secondTermScore[0] != 0) noOfTerms = 3
-                  console.log("number of terms ", noOfTerms)
-
-                  alreadyHasScores.scores[scorescount].term[termcount].subjects[subjectcount].cumulativeScore = +alreadyHasScores.scores[scorescount].term[termcount].subjects[subjectcount].totalScore + (+firstTermScore[0]) + (+secondTermScore[0]);
-                  alreadyHasScores.scores[scorescount].term[termcount].subjects[subjectcount].cumulativeAverage = +alreadyHasScores.scores[scorescount].term[termcount].subjects[subjectcount].cumulativeScore / noOfTerms;
-                  // let subjectAvg =  alreadyHasScores.scores[scorescount].term[termcount].subjects[subjectcount].cumulativeAverage;
-                  // totalOfAverages += subjectAvg;
+                if (firstTerm != undefined) {
+                  let matchSubject1st = firstTerm.subjects.find(asubject => asubject.subjectName == alreadyHasScores.scores[scorescount].term[termcount].subjects[subjectcount].subjectName)
+                  if (!matchSubject1st) firstTermScore[0] = 0;
+                  else firstTermScore[0] = matchSubject1st.totalScore
                 }
+                else firstTermScore[0] = 0;
+
+                if (secondTerm != undefined) {
+                  let matchSubject2nd = secondTerm.subjects.find(asubject => asubject.subjectName == alreadyHasScores.scores[scorescount].term[termcount].subjects[subjectcount].subjectName)
+                  if (!matchSubject2nd) secondTermScore[0] = 0;
+                  else secondTermScore[0] = matchSubject2nd.totalScore
+                }
+                else secondTermScore[0] = 0
+
+                console.log(firstTermScore[0])
+                console.log(secondTermScore[0])
+                console.log(alreadyHasScores.scores[scorescount].term[termcount].subjects[subjectcount].totalScore)
+                if ((firstTermScore[0] != 0 && secondTermScore[0] == 0) || (secondTermScore[0] == 0 && firstTermScore[0] != 0)) noOfTerms = 2
+                else if (firstTermScore[0] != 0 && secondTermScore[0] != 0) noOfTerms = 3
+                console.log("number of terms ", noOfTerms)
+
+                alreadyHasScores.scores[scorescount].term[termcount].subjects[subjectcount].cumulativeScore = +alreadyHasScores.scores[scorescount].term[termcount].subjects[subjectcount].totalScore + (+firstTermScore[0]) + (+secondTermScore[0]);
+                alreadyHasScores.scores[scorescount].term[termcount].subjects[subjectcount].cumulativeAverage = +alreadyHasScores.scores[scorescount].term[termcount].subjects[subjectcount].cumulativeScore / noOfTerms;
+                // let subjectAvg =  alreadyHasScores.scores[scorescount].term[termcount].subjects[subjectcount].cumulativeAverage;
+                // totalOfAverages += subjectAvg;
+              }
               // }
             }
             alreadyHasScores.scores[scorescount].term[termcount].grandTotal = alreadyHasScores.scores[scorescount].term[termcount].subjects.length * 100;
             console.log("stage1 passed")
-            if (req.body.term.termName == 'third'){
+            if (req.body.term.termName == 'third') {
               alreadyHasScores.scores[scorescount].term[termcount].marksObtained = alreadyHasScores.scores[scorescount].term[termcount].subjects.reduce((accumulator, score) => {
                 return accumulator += (+score.cumulativeAverage);
               }, 0)
             }
-            else{
-            alreadyHasScores.scores[scorescount].term[termcount].marksObtained = alreadyHasScores.scores[scorescount].term[termcount].subjects.reduce((accumulator, score) => {
-              return accumulator += (+score.totalScore);
-            }, 0)
+            else {
+              alreadyHasScores.scores[scorescount].term[termcount].marksObtained = alreadyHasScores.scores[scorescount].term[termcount].subjects.reduce((accumulator, score) => {
+                return accumulator += (+score.totalScore);
+              }, 0)
             }
             console.log("stage2 passed")
             alreadyHasScores.scores[scorescount].term[termcount].avgPercentage = (alreadyHasScores.scores[scorescount].term[termcount].marksObtained / alreadyHasScores.scores[scorescount].term[termcount].grandTotal) * 100
