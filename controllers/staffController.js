@@ -63,12 +63,12 @@ const getStaff = async (req, res, next) => {
   const pageSize = 7;
 
   const staff = await Staff.find({})
-    .sort({ gender: -1 })
+    .sort({ role: 1 })
     .select('_id stafferName email gender address phoneNumber role isAdmin')
   if (!staff) throw new NotFoundError("Error: no staff found");
   const noOfStaff = staff.length;
 
-  const staffperpage = await Staff.find()
+  const staffperpage = await Staff.find({})
     .sort({ role: 1 })
     .skip((pageNumber - 1) * pageSize)
     .limit(pageSize);
@@ -101,7 +101,7 @@ const getTeachers = async (req, res, next) => {
   const noOfStaff = teachers.length;
 
   const teachersperpage = await Staff.find({ role: "teacher" })
-    .sort({ gender: 1 })
+    .sort({ gender: -1 })
     .skip((pageNumber - 1) * pageSize)
     .limit(pageSize);
 
@@ -210,8 +210,14 @@ const deleteStaff = async (req, res, next) => {
   res.status(200).json({ status: "success", message: "Staff has been deleted" });
 };
 
+// set report card details for a programme
 const setDetails = async (req, res, next) => {
   const {programme} = req.query;
+
+  const isValidStaff = await Staff.findOne({ email: req.user.email })
+  if (isValidStaff.teacherProgramme != programme) {
+    throw new UnAuthorizedError("Error: Sorry, you are not allowed to set details of other programmes")
+  }
   const { maxAttendance, nextTermDate } = req.body;
   
   const detailsExist = await CardDetails.findOne({programme})

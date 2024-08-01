@@ -77,7 +77,7 @@ const studentSchema = new mongoose.Schema({
     type: String,
     required: [true, "state cannot be empty"],
     trim: true,
-    maxlength: [10, "maximum characters for state of origin is 16"],
+    maxlength: [20, "maximum characters for state of origin is 16"],
   },
 
   maritalStatus: {

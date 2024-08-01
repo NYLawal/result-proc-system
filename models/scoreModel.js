@@ -1,5 +1,4 @@
 const mongoose = require('mongoose')
-const classSchema = require('./classModel')
 
 const scoreSchema = new mongoose.Schema({
     studentId: {
@@ -31,10 +30,10 @@ const scoreSchema = new mongoose.Schema({
           grandTotal:Number,
           marksObtained:Number,
           avgPercentage:Number,
-          attendance:[{
-            termdate:String,
-            presence:String
-          }]
+          // attendance:[{
+          //   termdate:String,
+          //   presence:String
+          // }]
       }],
       
     }]

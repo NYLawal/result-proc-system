@@ -128,7 +128,7 @@ const getStudentsByClass = async (req, res, next) => {
   const teacherClass = teacher.teacherClass
   const teacherProgramme = teacher.teacherProgramme
 
-  const students = await Student.find({ $and: [{ presentClass: teacherClass }, { programme: teacherProgramme }] })
+  const students = await Student.find({ $and: [{ presentClass: teacherClass }, { programme: teacherProgramme }] }).sort({ admNo: 1 })
   const noOfStudents = students.length;
   const studentsperpage = await Student.find({ $and: [{ presentClass: teacherClass }, { programme: teacherProgramme }] })
     .sort({ admNo: 1 })

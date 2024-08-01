@@ -1,6 +1,7 @@
 
 const sClass = require("../models/classModel");
 const CardDetails = require("../models/carddetailsModel");
+const Staff = require("../models/staffModel");
 const { MailNotSentError, BadUserRequestError, NotFoundError, UnAuthorizedError } =
   require('../middleware/errors')
 
@@ -33,7 +34,7 @@ const s3 = new aws.S3({
   secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
 });
 
-const upload = () =>
+const upload = (str1, str2) =>
   multer({
     storage: multerS3({
       s3,
@@ -44,7 +45,7 @@ const upload = () =>
       },
       key: function (req, file, cb) {
         // const fileName = "img" + Date.now() + "_" + file.originalname;
-        const fileName = "img" + file.originalname;
+        let fileName = "img_" + str1 + "_" + str2;
         cb(null, fileName);
       },
     }),
@@ -60,8 +61,10 @@ const upload = () =>
   });
 
 const uploadImg = async (req, res, next) => {
-  console.log(req.body)
-  const uploadSingle = upload().single("signatureImage");
+  const classteacher = await Staff.findOne({email:req.user.email})
+  const teacher_class = classteacher.teacherClass
+  const teacher_programme = classteacher.teacherProgramme
+  const uploadSingle = upload(teacher_class,teacher_programme).single("signatureImage");
   uploadSingle(req, res, async (err) => {
     if (err instanceof multer.MulterError) {
       return res.status(404).end("file exceeds accepted standard!");
@@ -76,6 +79,41 @@ const uploadImg = async (req, res, next) => {
   });
 };
 
+const uploadPrplSignature = async (req, res, next) => {
+  const principal = await Staff.findOne({email:req.user.email})
+  const prcpl_programme = principal.teacherProgramme
+  const uploadSingle = upload(prcpl_programme, "principal").single("signatureImage"); 
+  uploadSingle(req, res, async (err) => {
+    if (err instanceof multer.MulterError) {
+      return res.status(404).end("file exceeds accepted standard!");
+    } else if (err) {
+      return res.status(404).end(err.message);
+    } else if (!req.file) {
+      return res.status(404).end("File is required!");
+    }
+    // if image uploads successfully, get url of image and pass to the next middleware
+    req.signature_url = req.file.location;
+    next();
+  });
+};
+
+const uploadPropSignature = async (req, res, next) => {
+  const uploadSingle = upload("madrasah", "proprietor").single("signatureImage"); 
+  uploadSingle(req, res, async (err) => {
+    if (err instanceof multer.MulterError) {
+      return res.status(404).end("file exceeds accepted standard!");
+    } else if (err) {
+      return res.status(404).end(err.message);
+    } else if (!req.file) {
+      return res.status(404).end("File is required!");
+    }
+    // if image uploads successfully, get url of image and pass to the next middleware
+    req.signature_url = req.file.location;
+    next();
+  });
+};
+
+// add details for a class
 const addDetails = async (req, res, next) => {
   const { noInClass } = req.body;
   const {className, programme} = req.query;
@@ -202,4 +240,4 @@ throw new BadUserRequestError(`Error: ${subject} does not exist as a subject for
 
 
 
-module.exports = {getClassSubjects, addClassSubject, removeClassSubject, uploadImg, addDetails, addPrincipalSignature, addProprietorSignature}
+module.exports = {getClassSubjects, addClassSubject, removeClassSubject, uploadImg, uploadPrplSignature, uploadPropSignature, addDetails, addPrincipalSignature, addProprietorSignature}

@@ -13,10 +13,9 @@ const staffSchema = new mongoose.Schema(
       },
     email: {
       type: String,
-      required: [true, "email esxists for another staff"],
+      required: [true, "email is required"],
       trim: true,
-      unique:true,
-    //   index: { unique: true },
+      // unique:true,
       match: /^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/,
     },
     password: {
