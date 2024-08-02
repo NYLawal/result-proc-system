@@ -60,16 +60,16 @@ function getEndOfPage(staffNum, pgSize) {
 
 const getStaff = async (req, res, next) => {
   let pageNumber = +req.params.page || 1;
-  const pageSize = 7;
+  const pageSize = 10;
 
   const staff = await Staff.find({})
-    .sort({ gender: -1 })
+    .sort({ role: 1 })
     .select('_id stafferName email gender address phoneNumber role isAdmin')
   if (!staff) throw new NotFoundError("Error: no staff found");
   const noOfStaff = staff.length;
 
   const staffperpage = await Staff.find({})
-    .sort({ gender: -1 })
+    .sort({ role: 1 })
     .skip((pageNumber - 1) * pageSize)
     .limit(pageSize);
 

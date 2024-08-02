@@ -95,9 +95,18 @@ const getStudents = async (req, res, next) => {
   if (Object.keys(queryObject).length === 0)
     return next(new Error("Error: no such criteria exists"));
 
-  const students = await Student.find(queryObject)
+  let students = await Student.find(queryObject);
+  const isStaff = await Staff.findOne({ email: req.user.email })
+  if (isStaff.isAdmin == false)
+    students = await Student.find({$and: [queryObject, {presentClass:isStaff.teacherClass}, {programme:isStaff.teacherProgramme}]})
+  
   const noOfStudents = students.length;
-  const studentsperpage = await Student.find(queryObject)
+  let studentsperpage = await Student.find(queryObject)
+    .sort({ admNo: 1 })
+    .skip((pageNumber - 1) * pageSize)
+    .limit(pageSize);
+  if (isStaff.isAdmin == false)
+    studentsperpage = await Student.find({$and: [queryObject, {presentClass:isStaff.teacherClass}, {programme:isStaff.teacherProgramme}]})
     .sort({ admNo: 1 })
     .skip((pageNumber - 1) * pageSize)
     .limit(pageSize);
@@ -122,7 +131,7 @@ const getStudents = async (req, res, next) => {
 
 const getStudentsByClass = async (req, res, next) => {
   let pageNumber = +req.params.page || 1;
-  const pageSize = 10;
+  const pageSize = 5;
 
   const teacher = await Staff.findOne({ email: req.user.email })
   const teacherClass = teacher.teacherClass
