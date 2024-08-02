@@ -293,7 +293,9 @@ const getScores = async (req, res, next) => {
     for (let recordcount = 0; recordcount < stdregister.length; recordcount++) {
       if (sessionName == stdregister[recordcount].sessionName) {
         for (let termcount = 0; termcount < stdregister[recordcount].term.length; termcount++) {
-          attendance = [...stdregister[recordcount].term[termcount].attendance]
+          if (termName == stdregister[recordcount].term[termcount].termName) {
+            attendance = [...stdregister[recordcount].term[termcount].attendance]
+          }
         }
       }
     }
