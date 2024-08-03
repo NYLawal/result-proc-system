@@ -45,7 +45,9 @@ const upload = (str1, str2) =>
       },
       key: function (req, file, cb) {
         // const fileName = "img" + Date.now() + "_" + file.originalname;
-        let fileName = "img_" + str1 + "_" + str2;
+        const fileNameOriginal = file.originalname.split(".");
+        let fileExtension = fileNameOriginal.pop()
+        let fileName = "img_" + str1 + "_" + str2 + "." + fileExtension;
         cb(null, fileName);
       },
     }),
@@ -187,7 +189,6 @@ const getClassSubjects = async (req, res, next) => {
     {programme}
   ]
 })
-// console.log(classExists)
 if (!classExists) throw new NotFoundError("Error: this class has no registered subjects");
 res.status(200).json({ status: "success", message: "successful", classExists });
 }

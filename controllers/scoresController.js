@@ -730,7 +730,40 @@ const markAttendance = async (req, res, next) => {
 }
 
 
+const deleteScores = async (req, res, next) => {
+  const { termName, sessionName, programme, admNo } = req.query
+  const isValidStaff = await Staff.findOne({ email: req.user.email })
+  if (isValidStaff.teacherProgramme != programme) {
+    throw new UnAuthorizedError("Error: Sorry, you are not allowed to delete scores for students of other programmes")
+  }
 
-module.exports = { addScores, getScores, getTermlyScores, getScoresBySession, getClassScores, promoteStudents, updateScores, addTermComment, markAttendance }
+  // check whether details match any student of the school
+  const isStudent = await Student.findOne({ admNo });
+  if (!isStudent) {
+    throw new BadUserRequestError("Error: No student with this admission number exists");
+  }
+
+  const alreadyHasScores = await Score.findOne({ studentId: isStudent._id })
+  // check whether student exists in the scores database
+  if (!alreadyHasScores) throw new NotFoundError("Error: no scores registered for this student");
+  else { // if yes, return all registerd scores for the student in the session queried
+    let result = alreadyHasScores.scores
+    for (let count = 0; count < result.length; count++) {
+      if (sessionName == result[count].sessionName) {
+        const termRequest = result[count].term.find(aterm => aterm.termName == termName)
+        if (!termRequest) throw new NotFoundError("Error: student has no scores registered for this term");
+        const termToDelete = result[count].term.indexOf(termRequest)
+        const delTerm = result[count].term.splice(termToDelete, 1)
+        alreadyHasScores.save();
+        return res.status(200).json({ status: "success", delTerm, message: `${alreadyHasScores.student_name}'s scores have been deleted for ${termName} term ${sessionName}` });
+      }
+    }
+  }
+  throw new NotFoundError("Error: no scores found for the session specified")
+}
+
+
+
+module.exports = { addScores, getScores, getTermlyScores, getScoresBySession, getClassScores, promoteStudents, updateScores, addTermComment, markAttendance, deleteScores }
 
 
