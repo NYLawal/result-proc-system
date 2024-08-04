@@ -282,19 +282,21 @@ const getScores = async (req, res, next) => {
       throw new BadUserRequestError("Error: you do not have access to this result. Input your admission number.");
   }
   const alreadyHasScores = await Score.findOne({ studentId: isStudent._id })
-  const stdAttendance = await Attendance.findOne({ admissionNumber: admNo })
-  let attendance = []
-
   if (!alreadyHasScores) throw new NotFoundError("Error: no scores registered for this student");
   else { // if yes, return all registerd scores and attendance for the student in the session and year queried
 
-    //get attendance
-    let stdregister = stdAttendance.attendanceRecord
-    for (let recordcount = 0; recordcount < stdregister.length; recordcount++) {
-      if (sessionName == stdregister[recordcount].sessionName) {
-        for (let termcount = 0; termcount < stdregister[recordcount].term.length; termcount++) {
-          if (termName == stdregister[recordcount].term[termcount].termName) {
-            attendance = [...stdregister[recordcount].term[termcount].attendance]
+    const stdAttendance = await Attendance.findOne({ admissionNumber: admNo })
+    let attendance = []
+
+    if (stdAttendance) {
+      //get attendance
+      let stdregister = stdAttendance.attendanceRecord
+      for (let recordcount = 0; recordcount < stdregister.length; recordcount++) {
+        if (sessionName == stdregister[recordcount].sessionName) {
+          for (let termcount = 0; termcount < stdregister[recordcount].term.length; termcount++) {
+            if (termName == stdregister[recordcount].term[termcount].termName) {
+              attendance = [...stdregister[recordcount].term[termcount].attendance]
+            }
           }
         }
       }
@@ -341,7 +343,7 @@ const getScores = async (req, res, next) => {
                 else secondTermScore[subjectcount] = 0
               }
             }
-            let reportcarddetails = await CardDetails.findOne({})
+            let reportcarddetails = await CardDetails.findOne({ programme: isStudent.programme })
             let maxAttendance = reportcarddetails.maxAttendance
             let nextTermDate = reportcarddetails.nextTermDate
             let principalSign = reportcarddetails.principalSignature
@@ -655,35 +657,23 @@ const updateScores = async (req, res, next) => {
 const markAttendance = async (req, res, next) => {
   const { className, termName, sessionName, programme } = req.query;
 
-  const classExists = await Attendance.find(
-    {
-      $and:
-        [
-          { programme: programme },
-          { "attendanceRecord.className": className },
-          { "attendanceRecord.sessionName": sessionName },
-          { "attendanceRecord.term.termName": termName },
-        ]
-    })
-  // console.log(classExists)
-  if (classExists.length == 0) {
-    for (let count = 0; count < req.body.length; count++) {
-      const studentname = req.body[count].student_name.split(" ");
-      let firstName = studentname[0];
-      let lastName = studentname[1];
-      // console.log(firstName, lastName)
-      const student = await Student.findOne({
+  for (let count = 0; count < req.body.length; count++) {
+    let dayattendance = {
+      termdate: req.body[count].termdate,
+      presence: req.body[count].presence,
+    }
+    const studentExists = await Attendance.findOne(
+      {
         $and:
           [
-            { firstName },
-            { lastName }
+            { admissionNumber: req.body[count].admissionNumber },
+            { student_name: req.body[count].student_name },
           ]
       })
-      const addStudent = await Attendance.create({ admissionNumber: student.admNo, student_name: student.firstName + " " + student.lastName, programme: student.programme });
-      let dayattendance = {
-        termdate: req.body[count].termdate,
-        presence: req.body[count].presence,
-      }
+
+    if (!studentExists) {
+      const addStudent = await Attendance.create({ admissionNumber: req.body[count].admissionNumber, student_name: req.body[count].student_name, programme });
+
       let timeOfYear = {
         sessionName,
         className,
@@ -691,42 +681,52 @@ const markAttendance = async (req, res, next) => {
           termName,
           attendance: dayattendance
         }
-
       }
       addStudent.attendanceRecord.push(timeOfYear)
       addStudent.save()
-      console.log(addStudent)
     }
-  }
-  else {
-    for (let stdcount = 0; stdcount < classExists.length; stdcount++) {
-      for (let count = 0; count < req.body.length; count++) {
-        if (req.body[count].student_name == classExists[stdcount].student_name) {
-          console.log("match seen name")
-          for (let recordcount = 0; recordcount < classExists[stdcount].attendanceRecord.length; recordcount++) {
-            const sessionMatch = classExists[stdcount].attendanceRecord.find(asession => asession.sessionName == sessionName)
-            if (!sessionMatch) throw new BadUserRequestError("Error: the student doesn't have a record for the session specified");
-            else {
-              console.log("match seen session")
-              const termMatch = classExists[stdcount].attendanceRecord[recordcount].term.find(aterm => aterm.termName == termName)
-              if (!termMatch) throw new BadUserRequestError("Error: the student doesn't have a record for the term specified");
-              else {
-                console.log("match seen term")
-                let dayattendance = {
-                  termdate: req.body[count].termdate,
-                  presence: req.body[count].presence,
-                }
-                termMatch.attendance.push(dayattendance)
 
-                classExists[stdcount].save();
-              }
+    else { // student has attendance record
+      for (let recordcount = 0; recordcount < studentExists.attendanceRecord.length; recordcount++) {
+        const sessionMatch = studentExists.attendanceRecord.find(asession => asession.sessionName == sessionName)
+        if (!sessionMatch) { // if session requested not seen
+          let timeOfYear = {
+            sessionName,
+            className,
+            term: {
+              termName,
+              attendance: dayattendance
             }
+
+          }
+          studentExists.attendanceRecord.push(timeOfYear)
+          studentExists.save()
+        }
+        else { // if session requested seen
+          const termMatch = studentExists.attendanceRecord[recordcount].term.find(aterm => aterm.termName == termName)
+          if (!termMatch) { //term not seen
+
+            let termOfSession = {
+              termName,
+              attendance: dayattendance
+
+            }
+            studentExists.attendanceRecord[recordcount].term.push(termOfSession)
+            studentExists.save()
+          }
+          else { // term seen
+            for (let atdcount = 0; atdcount < termMatch.attendance.length; atdcount++) {
+              if (termMatch.attendance[atdcount].termdate == req.body[count].termdate) { throw new BadUserRequestError("Error: attendance already exists for this date") }
+            }
+
+            termMatch.attendance.push(dayattendance)
+            studentExists.save()
           }
         }
       }
     }
   }
-  return res.status(200).json({ status: "Success", classExists, message: `attendance updated successfully` });
+  return res.status(200).json({ status: "Success", message: `attendance updated successfully` });
 }
 
 

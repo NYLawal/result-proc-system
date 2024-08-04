@@ -161,21 +161,15 @@ const addPrincipalSignature = async (req, res, next) => {
 
 const addProprietorSignature = async (req, res, next) => {
   const {programme} = req.query
-  const detailsExist = await CardDetails.findOne({programme})  
-    if (!detailsExist){
-      const addDetails = await CardDetails.create({programme, proprietorSignature:req.signature_url})
-      return res.status(201).json({
-        status: "Success",
-        message: "proprietor signature added successfully",
-        addDetails
-      });
-      }
-      detailsExist.proprietorSignature = req.signature_url;
-      detailsExist.save();
+  const detailsExist = await CardDetails.find({}) 
+  for (let i=0; i < detailsExist.length; i++) {
+    detailsExist[i].proprietorSignature = req.signature_url;
+    detailsExist[i].save();
+  }
       
       res.status(200).json({
         status: "Success",
-        message: "{proprietor signature updated successfully",
+        message: "proprietor signature added successfully",
         detailsExist
   });
 };

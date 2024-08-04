@@ -13,10 +13,11 @@ const attendanceSchema = new mongoose.Schema({
             termdate:String,
             presence:String
           }]
-      }],
-      
+      }],     
     }]
-})
+},
+{ timestamps: true }
+)
 
 
 module.exports = mongoose.model('Attendances', attendanceSchema)
