@@ -230,13 +230,22 @@ const updateStudent = async (req, res, next) => {
 
 const updateStatus = async (req, res, next) => {
   let { admNo } = req.query;
-  let nonStudentStatus = req.body.status
+  let studentStatus = req.body.status
+  let nonStudentStatus = req.body.statusReason
+
+  if (studentStatus == "current"){
+  const student = await Student.findOneAndUpdate({ admNo }, { studentStatus: "current", nonStudentStatus: "graduated" }, { new: true })
+  if (!student) return next(new Error("Error: no such student found"));
+  }
+
+  if (studentStatus == "past"){
   const student = await Student.findOneAndUpdate({ admNo }, { studentStatus: "past", nonStudentStatus }, { new: true })
   if (!student) return next(new Error("Error: no such student found"));
+  }
 
   res
     .status(200)
-    .json({ status: "success", message: "Student's status has been updated", student });
+    .json({ status: "success", message: "Student's status has been updated" });
 };
 
 
