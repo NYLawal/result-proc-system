@@ -98,7 +98,7 @@ const getStudents = async (req, res, next) => {
   let students = await Student.find(queryObject);
   const isStaff = await Staff.findOne({ email: req.user.email })
   if (isStaff.isAdmin == false)
-    students = await Student.find({$and: [queryObject, {presentClass:isStaff.teacherClass}, {programme:isStaff.teacherProgramme}]})
+    students = await Student.find({$and: [queryObject, {presentClass:isStaff.teacherClass}, {programme:isStaff.teacherProgramme}, {studentStatus : "current"}]})
   
   const noOfStudents = students.length;
   let studentsperpage = await Student.find(queryObject)
@@ -106,7 +106,7 @@ const getStudents = async (req, res, next) => {
     .skip((pageNumber - 1) * pageSize)
     .limit(pageSize);
   if (isStaff.isAdmin == false)
-    studentsperpage = await Student.find({$and: [queryObject, {presentClass:isStaff.teacherClass}, {programme:isStaff.teacherProgramme}]})
+    studentsperpage = await Student.find({$and: [queryObject, {presentClass:isStaff.teacherClass}, {programme:isStaff.teacherProgramme}, {studentStatus : "current"}]})
     .sort({ admNo: 1 })
     .skip((pageNumber - 1) * pageSize)
     .limit(pageSize);
