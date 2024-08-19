@@ -137,17 +137,15 @@ const getStudentsByClass = async (req, res, next) => {
   const teacherClass = teacher.teacherClass
   const teacherProgramme = teacher.teacherProgramme
 
-  const students = await Student.find({ $and: [{ presentClass: teacherClass }, { programme: teacherProgramme }] }).sort({ admNo: 1 })
+  const students = await Student.find({ $and: [{ presentClass: teacherClass }, { programme: teacherProgramme }, {studentStatus : "current"} ] }).sort({ admNo: 1 })
   const noOfStudents = students.length;
-  const studentsperpage = await Student.find({ $and: [{ presentClass: teacherClass }, { programme: teacherProgramme }] })
+  const studentsperpage = await Student.find({ $and: [{ presentClass: teacherClass }, { programme: teacherProgramme }, {studentStatus : "current"}] })
     .sort({ gender: -1 })
     .skip((pageNumber - 1) * pageSize)
     .limit(pageSize);
 
   if (students.length == 0)
     return next(new Error("Error: no students found"));
-
-  // const admissionNumbers = students.admNo
 
   const pgnum = getEndOfPage(noOfStudents, pageSize)
 
