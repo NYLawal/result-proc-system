@@ -35,15 +35,14 @@ function newStudentValidation(student) {
       .min(20)
       .max(255)
       .error(new ValidationError("address cannot be empty and must be a valid one")),
-    phoneNumber: joiPhoneValidate.string()
-    .required()
-    .phoneNumber({ format: "international",
-    strict: true, })
-    .error(
-      new ValidationError(
-        "please input a valid phone number with valid country code"
-      )
-    ),
+      phoneNumber: Joi.string()
+      .regex(/^[+0-9]{11,15}$/)
+      .required()
+      .error(
+        new ValidationError(
+          "Input a valid phone number, add your country code if not Nigerian"
+        )
+      ),
     email:Joi.string()
     .email()
     .error(
@@ -122,15 +121,14 @@ function updateStudentValidation(student) {
       .min(20)
       .max(255)
       .error(new ValidationError("address cannot be empty and must be a valid one")),
-    phoneNumber: joiPhoneValidate.string()
-    .required()
-    .phoneNumber({ format: "international",
-    strict: true, })
-    .error(
-      new ValidationError(
-        "please input a valid phone number with valid country code"
-      )
-    ),
+      phoneNumber: Joi.string()
+      .regex(/^[+0-9]{11,15}$/)
+      .required()
+      .error(
+        new ValidationError(
+         "Input a valid phone number, add your country code if not Nigerian"
+        )
+      ),
     email:Joi.string()
     .email()
     .error(
@@ -148,8 +146,8 @@ function updateStudentValidation(student) {
     ),
     stateOfOrigin: Joi.string()
     .required()
-    .max(10)
-    .error(new ValidationError("state of origin cannot be empty or exceed 10 characters")),
+    .max(17)
+    .error(new ValidationError("state of origin cannot be empty or exceed 17 characters")),
     maritalStatus: Joi.string()
     .required()
     .valid("single","married")
@@ -167,4 +165,4 @@ module.exports = {
   updateStudentValidation,
   editStudentValidation
 };
-// exports.validate = newStudentValidation;
+

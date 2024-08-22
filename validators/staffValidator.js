@@ -33,15 +33,12 @@ function addStaffValidator(staffer) {
           "Staffer must have an address"
         )
       ),
-    phoneNumber: joiPhoneValidate.string()
+    phoneNumber: Joi.string()
+      .regex(/^[+0-9]{11,15}$/)
       .required()
-      .phoneNumber({
-        format: "international",
-        strict: true,
-      })
       .error(
         new ValidationError(
-          "please input a valid phone number with valid country code"
+         "Input a valid phone number, add your country code if not Nigerian"
         )
       ),
     teacherClass: Joi.string()
@@ -117,15 +114,12 @@ function updateStaffValidator(staffer) {
           "Staffer must have an address"
         )
       ),
-    phoneNumber: joiPhoneValidate.string()
+      phoneNumber: Joi.string()
+      .regex(/^[+0-9]{11,15}$/)
       .required()
-      .phoneNumber({
-        format: "international",
-        strict: true,
-      })
       .error(
         new ValidationError(
-          "please input a valid phone number with valid country code"
+          "Input a valid phone number, add your country code if not Nigerian"
         )
       ),
     teacherClass: Joi.string(),
