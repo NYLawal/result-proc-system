@@ -121,9 +121,22 @@ const getTeachers = async (req, res, next) => {
   });
 };
 
+const getClassesAssigned = async (req, res, next) => {
+  const email = req.user.email;
+  const teacher = await Staff.findOne({ email })
+  if (!teacher) throw new NotFoundError("Error: This email is not associated with any staffer");
+
+  let assignedClasses = teacher.assignedClasses;
+  if (assignedClasses.length == 0) throw new BadUserRequestError("Error: Staffer has not been assigned to any class");
+
+  res.status(200).json({
+    status: "Success",
+    message: "Classes assigned successfully returned, see details below",
+    assignedClasses
+  });
+};
 
 const getTeacherClass = async (req, res, next) => {
-  // const teacher = await Staff.findOne({$and: [{email:req.user.email}, {role:"teacher"}]})
   const teacher = await Staff.findOne({ email: req.user.email })
     .select('teacherClass teacherProgramme')
 
@@ -136,18 +149,48 @@ const getTeacherClass = async (req, res, next) => {
 };
 
 const assignAsTeacher = async (req, res, next) => {
-  // const teacher = await Staff.findOne({$and: [{email:req.user.email}, {role:"teacher"}]})
   const { email, teacherClass, teacherProgramme } = req.body
   const teacher = await Staff.findOne({ email })
   if (!teacher) throw new NotFoundError("Error: no such staff found");
 
-  teacher.teacherClass = teacherClass;
-  teacher.teacherProgramme = teacherProgramme;
+  let requestedClass = teacher.assignedClasses.find(aclass => aclass.class == teacherClass && aclass.programme == teacherProgramme)
+  if (requestedClass) throw new BadUserRequestError(`Error: this staffer has already been assigned to ${teacherClass} in ${teacherProgramme}`)
+
+  let newClass = {
+    class: teacherClass,
+    programme: teacherProgramme
+  }
+  teacher.assignedClasses.push(newClass);
   teacher.save();
 
   res.status(200).json({
     status: "Success",
-    message: "Teacher successfully assigned",
+    message: `Teacher successfully assigned to ${teacherClass} in ${teacherProgramme}`,
+    teacher
+  });
+};
+
+const deassignTeacher = async (req, res, next) => {
+  const { email, teacherClass, teacherProgramme } = req.body
+  const teacher = await Staff.findOne({ email })
+  if (!teacher) throw new NotFoundError("Error: no such staff found");
+
+  // check if staffer has any assigned classes
+  if (teacher.assignedClasses.length == 0) {
+    throw new BadUserRequestError("Error: no assigned classes found for the staffer ")
+  }
+  // check for existence of requested class and programme in assigned classes
+  let requestedClass = teacher.assignedClasses.find(aclass => aclass.class == teacherClass && aclass.programme == teacherProgramme)
+  if (!requestedClass) throw new BadUserRequestError(`Error: this staffer has not been assigned to ${teacherClass} in ${teacherProgramme}`)
+  else {
+    let classToDelete = teacher.assignedClasses.indexOf(requestedClass)
+    teacher.assignedClasses.splice(classToDelete, 1);
+  }
+  teacher.save();
+
+  res.status(200).json({
+    status: "Success",
+    message: `Teacher successfully deassigned from ${teacherClass} in ${teacherProgramme}`,
     teacher
   });
 };
@@ -162,17 +205,11 @@ const editStaffQuery = async (req, res, next) => {
 
   const user = await User.findOne({ email })
   if (!user) throw new NotFoundError("Error: This staff is not registered. They need to sign up before their details can be updated");
-  // $and: [
-  // {email }, 
-  // {stafferName: {$regex: "stafferName", $options: "i"} },
-  // ],
-  // });
 
   res
     .status(200)
     .json({ status: "success", message: "Staffer found", staffer, user });
 };
-
 
 const updateStaff = async (req, res, next) => {
   const { error } = updateStaffValidator(req.body);
@@ -212,22 +249,22 @@ const deleteStaff = async (req, res, next) => {
 
 // set report card details for a programme
 const setDetails = async (req, res, next) => {
-  const {programme} = req.query;
+  const { programme } = req.query;
 
   const isValidStaff = await Staff.findOne({ email: req.user.email })
   if (isValidStaff.teacherProgramme != programme) {
     throw new UnAuthorizedError("Error: Sorry, you are not allowed to set details of other programmes")
   }
   const { maxAttendance, nextTermDate } = req.body;
-  
-  const detailsExist = await CardDetails.findOne({programme})
-  if (!detailsExist){
-  const addDetails = await CardDetails.create({...req.body, programme})
-  return res.status(201).json({
-    status: "Success",
-    message: "details added successfully",
-    addDetails
-  });
+
+  const detailsExist = await CardDetails.findOne({ programme })
+  if (!detailsExist) {
+    const addDetails = await CardDetails.create({ ...req.body, programme })
+    return res.status(201).json({
+      status: "Success",
+      message: "details added successfully",
+      addDetails
+    });
   }
   detailsExist.maxAttendance = maxAttendance;
   detailsExist.nextTermDate = nextTermDate;
@@ -240,4 +277,21 @@ const setDetails = async (req, res, next) => {
   });
 };
 
-module.exports = { addStaff, getStaff, getTeachers, getTeacherClass, assignAsTeacher, editStaffQuery, updateStaff, deleteStaff,setDetails }
+// allow a teacher switch btw classes
+const switchClasses = async (req, res, next) => {
+  const { teacherClass, teacherProgramme } = req.body
+  const teacher = await Staff.findOne({ email: req.user.email })
+  if (!teacher) throw new NotFoundError("Error: no such staff found");
+
+  teacher.teacherClass = teacherClass;
+  teacher.teacherProgramme = teacherProgramme;
+  teacher.save();
+
+  res.status(200).json({
+    status: "Success",
+    message: `You have successfully been assigned to ${teacherClass} in ${teacherProgramme}`,
+    teacher
+  });
+};
+
+module.exports = { addStaff, getStaff, getTeachers, getTeacherClass, getClassesAssigned, assignAsTeacher, deassignTeacher, editStaffQuery, updateStaff, deleteStaff, setDetails, switchClasses }

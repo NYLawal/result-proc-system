@@ -7,10 +7,10 @@ require('dotenv').config();
 const staffSchema = new mongoose.Schema(
   {
     stafferName: {
-        type: String,
-        required:true,
-        maxlength: 50
-      },
+      type: String,
+      required: true,
+      maxlength: 50
+    },
     email: {
       type: String,
       required: [true, "email is required"],
@@ -45,24 +45,28 @@ const staffSchema = new mongoose.Schema(
       type: String,
       maxlength: 25,
       lowercase: true,
-      trim:true
+      trim: true
     },
     teacherProgramme: {
       type: String,
       maxlength: 25,
       lowercase: true,
-      trim:true
+      trim: true
     },
     role: {
       type: String,
       default: "teacher",
       lowercase: true,
-      trim:true
+      trim: true
     },
     isAdmin: {
-        type: Boolean,
-        default: false
+      type: Boolean,
+      default: false
     },
+    assignedClasses: [{
+      class: String,
+      programme: String
+    }],
     serialNo: {
       type: Number
     },
