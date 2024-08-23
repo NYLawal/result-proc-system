@@ -125,15 +125,25 @@ const getTeachers = async (req, res, next) => {
 const getClassesAssigned = async (req, res, next) => {
   const role = req.user.role;
   let email;
-  if (role == "teacher")  email = req.user.email;
+  if (role == "teacher") email = req.user.email;
   else email = req.query.email;
-  
+
   const teacher = await Staff.findOne({ email })
   if (!teacher) throw new NotFoundError("Error: This email is not associated with any staffer");
 
   let assignedClasses = teacher.assignedClasses;
-  if (assignedClasses.length == 0) throw new BadUserRequestError("Error: Staffer has not been assigned to any class");
-
+  if (assignedClasses.length == 0 && (teacher.teacherClass == "nil" && teacher.teacherProgramme == "nil")) throw new BadUserRequestError("Error: Staffer has not been assigned to any class");
+ 
+  // add the teacher's primary assigned class to array of assigned classes
+  let assignedClassExist = assignedClasses.find(aclass => aclass.class == teacher.teacherClass && aclass.programme == teacher.teacherProgramme)
+  if (!assignedClassExist) {
+    let newClass = {
+      class: teacher.teacherClass,
+      programme: teacher.teacherProgramme
+    }
+    teacher.assignedClasses.push(newClass);
+    teacher.save()
+  }
   res.status(200).json({
     status: "Success",
     message: "Classes assigned successfully returned, see details below",

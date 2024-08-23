@@ -381,13 +381,17 @@ const promoteOneStudent = async (req, res, next) => {
   res.status(200).json({ status: "success", message: "Student has been successfully promoted" });
 };
 
-
 const deleteStudent = async (req, res, next) => {
-  let { admNo } = req.query;
+  let { admNo, programme } = req.query;
+  const isValidStaff = await Staff.findOne({ email: req.user.email })
+  if (isValidStaff.teacherProgramme != programme) {
+    throw new UnAuthorizedError("Error: Sorry, you are not allowed to delete students of other programmes")
+  }
+
   const student = await Student.findOneAndDelete({ admNo });
   if (!student) return next(new Error("Error: no such student found"));
 
-  res.status(200).json({ status: "success", message: "user deleted successfully" });
+  res.status(200).json({ status: "success", message: "student deleted successfully" });
 };
 
 
