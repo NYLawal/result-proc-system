@@ -382,14 +382,18 @@ const promoteOneStudent = async (req, res, next) => {
 };
 
 const deleteStudent = async (req, res, next) => {
-  let { admNo, programme } = req.query;
+  let { admNo } = req.query;
+
+  const student = await Student.findOne({ admNo });
+  if (!student) return next(new Error("Error: no such student found"));
+
   const isValidStaff = await Staff.findOne({ email: req.user.email })
-  if (isValidStaff.teacherProgramme != programme) {
+  if (isValidStaff.teacherProgramme != student.programme) {
     throw new UnAuthorizedError("Error: Sorry, you are not allowed to delete students of other programmes")
   }
 
-  const student = await Student.findOneAndDelete({ admNo });
-  if (!student) return next(new Error("Error: no such student found"));
+  const studenttoDelete = await Student.findOneAndDelete({ admNo });
+ 
 
   res.status(200).json({ status: "success", message: "student deleted successfully" });
 };
