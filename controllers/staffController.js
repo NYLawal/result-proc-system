@@ -125,7 +125,7 @@ const getTeachers = async (req, res, next) => {
 const getClassesAssigned = async (req, res, next) => {
   const role = req.user.role;
   let email;
-  if (role == "teacher") email = req.user.email;
+  if (req.query.email == 'undefined') email = req.user.email;
   else email = req.query.email;
 
   const teacher = await Staff.findOne({ email })
