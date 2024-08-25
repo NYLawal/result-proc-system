@@ -83,6 +83,7 @@ const getStaff = async (req, res, next) => {
 
   res.status(200).json({
     status: "Success",
+    staff,
     staff_list: staffperpage,
     noOfStaff,
     page: pageNumber,
@@ -115,6 +116,7 @@ const getTeachers = async (req, res, next) => {
 
   res.status(200).json({
     status: "Success",
+    teachers,
     teachers_list: teachersperpage,
     noOfStaff,
     page: pageNumber,

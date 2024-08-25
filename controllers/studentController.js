@@ -126,7 +126,7 @@ const getStudents = async (req, res, next) => {
   }
   res
     .status(200)
-    .json({ status: "Success", studentsperpage, noOfStudents, page: pageNumber, pgnum });
+    .json({ status: "Success", studentsperpage, students, noOfStudents, page: pageNumber, pgnum });
 };
 
 const getStudentsByClass = async (req, res, next) => {
@@ -173,7 +173,7 @@ const getOneStudent = async (req, res, next) => {
 
 const getAllStudents = async (req, res, next) => {
   let pageNumber = +req.params.page || 1
-  const pageSize = 5;
+  const pageSize = 10;
 
   const students = await Student.find({ studentStatus: "current" })
   const noOfStudents = students.length;
@@ -194,7 +194,7 @@ const getAllStudents = async (req, res, next) => {
     let serialno = (pageSize * pageNumber) - (pageSize - (i + 1))
     studentsperpage[i].serialNo = serialno;
   }
-  res.status(200).json({ status: "success", studentsperpage, noOfStudents, page: pageNumber, pgnum });
+  res.status(200).json({ status: "success", studentsperpage, students, noOfStudents, page: pageNumber, pgnum });
 };
 
 
