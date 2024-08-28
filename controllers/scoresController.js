@@ -46,8 +46,6 @@ const addTermComment = async (req, res, next) => {
 
 
 const addScores = async (req, res, next) => {
-  // const { error } = addScoresValidation(req.body);
-  // if (error) throw error;
   let termName = req.body.term.termName;
   const { admNo } = req.query
 

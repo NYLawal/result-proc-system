@@ -135,10 +135,10 @@ const getClassesAssigned = async (req, res, next) => {
 
   let assignedClasses = teacher.assignedClasses;
   if (assignedClasses.length == 0 && (teacher.teacherClass == "nil" && teacher.teacherProgramme == "nil")) throw new BadUserRequestError("Error: Staffer has not been assigned to any class");
- 
+
   // add the teacher's primary assigned class to array of assigned classes
   let assignedClassExist = assignedClasses.find(aclass => aclass.class == teacher.teacherClass && aclass.programme == teacher.teacherProgramme)
-  if (!assignedClassExist) {
+  if (!assignedClassExist && (teacher.teacherClass != "nil" && teacher.teacherProgramme != "nil")) {
     let newClass = {
       class: teacher.teacherClass,
       programme: teacher.teacherProgramme
@@ -171,13 +171,17 @@ const assignAsTeacher = async (req, res, next) => {
   if (!teacher) throw new NotFoundError("Error: no such staff found");
 
   let requestedClass = teacher.assignedClasses.find(aclass => aclass.class == teacherClass && aclass.programme == teacherProgramme)
-  if (requestedClass) throw new BadUserRequestError(`Error: this staffer has already been assigned to ${teacherClass} in ${teacherProgramme}`)
+  if (requestedClass || (teacher.teacherClass == teacherClass && teacher.teacherProgramme == teacherProgramme)) throw new BadUserRequestError(`Error: this staffer has already been assigned to ${teacherClass} in ${teacherProgramme}`)
 
   let newClass = {
     class: teacherClass,
     programme: teacherProgramme
   }
   teacher.assignedClasses.push(newClass);
+  if (teacher.teacherClass == "nil" && teacher.teacherProgramme == "nil") { // teacher has no primary class
+    teacher.teacherClass = teacherClass;
+    teacher.teacherProgramme = teacherProgramme;
+  }
   teacher.save();
 
   res.status(200).json({
@@ -196,12 +200,28 @@ const deassignTeacher = async (req, res, next) => {
   if (teacher.assignedClasses.length == 0) {
     throw new BadUserRequestError("Error: no assigned classes found for the staffer ")
   }
-  // check for existence of requested class and programme in assigned classes
+  // check for existence of requested class and programme
   let requestedClass = teacher.assignedClasses.find(aclass => aclass.class == teacherClass && aclass.programme == teacherProgramme)
-  if (!requestedClass) throw new BadUserRequestError(`Error: this staffer has not been assigned to ${teacherClass} in ${teacherProgramme}`)
+  if (!requestedClass && (teacher.teacherClass != teacherClass || teacher.teacherProgramme != teacherProgramme)) throw new BadUserRequestError(`Error: this staffer has not been assigned to ${teacherClass} in ${teacherProgramme}`)
   else {
-    let classToDelete = teacher.assignedClasses.indexOf(requestedClass)
-    teacher.assignedClasses.splice(classToDelete, 1);
+    if (requestedClass) { //class to delete is found in assigned classes
+      let classToDelete = teacher.assignedClasses.indexOf(requestedClass)
+      teacher.assignedClasses.splice(classToDelete, 1);
+    }
+    if (teacher.teacherClass == teacherClass && teacher.teacherProgramme == teacherProgramme) { //class to delete is found as the primary class
+      if (teacher.assignedClasses.length != 0) {
+        for (let n = 0; n < teacher.assignedClasses.length; n++) {
+          if (teacher.assignedClasses[n].class != teacherClass || teacher.assignedClasses[n].programme != teacherProgramme) {
+            teacher.teacherClass = teacher.assignedClasses[n].class
+            teacher.teacherProgramme = teacher.assignedClasses[n].programme
+          }
+        }
+      }
+      else { //assigned classes array is empty
+        teacher.teacherClass = "nil"
+        teacher.teacherProgramme = "nil"
+      }
+    }
   }
   teacher.save();
 
