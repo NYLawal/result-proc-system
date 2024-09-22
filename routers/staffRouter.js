@@ -6,17 +6,17 @@ const authenticateUser = require('../middleware/auth')
 const { superAdmin, admin, adminORteacher } = require('../middleware/roles')
 
 
-router.post('/addStaff', [authenticateUser, superAdmin], addStaff)
+router.post('/addStaff', [authenticateUser, admin], addStaff)
 router.get('/viewStaff/:page', [authenticateUser, admin], getStaff)
 router.get('/viewTeachers/:page', [authenticateUser, admin], getTeachers)
 router.get('/getClass', [authenticateUser], getTeacherClass)
 router.get('/getClassesAssigned', [authenticateUser, adminORteacher], getClassesAssigned)
-router.post('/editStaff', [authenticateUser, superAdmin], editStaffQuery)
+router.post('/editStaff', [authenticateUser, admin], editStaffQuery)
 router.post('/setDetails', [authenticateUser, admin], setDetails)
 router.post('/switchClass', [authenticateUser, adminORteacher], switchClasses)
-router.patch('/assignTeacher', [authenticateUser, superAdmin], assignAsTeacher)
-router.patch('/deassignTeacher', [authenticateUser, superAdmin], deassignTeacher)
-router.patch('/updateStaff', [authenticateUser, superAdmin], updateStaff)
+router.patch('/assignTeacher', [authenticateUser, admin], assignAsTeacher)
+router.patch('/deassignTeacher', [authenticateUser, admin], deassignTeacher)
+router.patch('/updateStaff', [authenticateUser, admin], updateStaff)
 router.delete('/deleteStaff', [authenticateUser, superAdmin], deleteStaff)
 
 
