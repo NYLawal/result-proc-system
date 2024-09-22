@@ -4,8 +4,6 @@ const { UnAuthorizedError, BadUserRequestError } = require('./errors');
 
 
  function authenticateUser(req, res, next){
-  // const token = req.header('x-auth-token');
-  // if(!token) throw new BadUserRequestError("Error: no token present");
   const authHeader = req.headers.authorization
   if(!authHeader || !authHeader.startsWith('Bearer')) {
     throw new BadUserRequestError("Error: You need to sign in");

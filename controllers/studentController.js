@@ -1,6 +1,7 @@
 const dbDebugger = require("debug")("app:db");
 const Student = require("../models/studentModel");
 const Staff = require("../models/staffModel");
+const User = require("../models/userModel");
 const Score = require("../models/scoreModel");
 const {
   newStudentValidation,
@@ -219,6 +220,9 @@ const updateStudent = async (req, res, next) => {
   let { admNo } = req.body;
   const student = await Student.findOneAndUpdate({ admNo }, req.body, { new: true })
   if (!student) return next(new Error("Error: no such student found"));
+
+  const parent = await User.findOne({email:req.body.parentEmail})
+  parent.userRole = "parent"
 
   res
     .status(200)

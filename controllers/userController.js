@@ -3,13 +3,12 @@ const { MailNotSentError, BadUserRequestError, NotFoundError, UnAuthorizedError 
 require('dotenv').config();
 const _ = require('lodash')
 const bcrypt = require('bcrypt')
-// const cryptoRandomString = require('crypto-random-string') 
 const crypto = require('crypto');
 const User = require("../models/userModel");
 const Staff = require("../models/staffModel");
 const Student = require("../models/studentModel");
 const Token = require('../models/tokenModel')
-// const sendEmail = require ("../utils/mailHandler")
+
 const {
     userSignUpValidator,
     userLogInValidator,
@@ -67,7 +66,6 @@ const userLogIn = async (req, res, next) => {
     res.header('access_token', access_token).status(200).json({
         status: "Success",
         message: "Successfully logged in",
-        // user:  _.pick(user, ['_id','email']),
         user,
         access_token: access_token
     });
@@ -86,10 +84,6 @@ const forgotPassword = async (req, res) => {
             userId: user._id,
             token: crypto.randomBytes(32).toString("hex"),
         }).save();
-
-        // token = await Token.create({ userId: user._id, token: crypto.randomBytes(32).toString("hex")})
-        // console.log(token)
-        // token = await Token.create({ userId: user._id, token: cryptoRandomString({length: 10})})
     }
 
     // const link = `${process.env.RESET_PASSWORD_PAGE}/user/password-reset/${user._id}/${token.token}`;
