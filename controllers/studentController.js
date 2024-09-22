@@ -222,7 +222,7 @@ const updateStudent = async (req, res, next) => {
   if (!student) return next(new Error("Error: no such student found"));
 
   const parent = await User.findOne({email:req.body.parentEmail})
-  parent.userRole = "parent"
+  if (parent) parent.userRole = "parent";
 
   res
     .status(200)
@@ -268,7 +268,6 @@ const promoteStudents = async (req, res, next) => {
     })
   if (termRequest.length == 0) throw new NotFoundError("Error: no registered scores found");
 
-  console.log(termRequest.length)
   for (let i = 0; i < termRequest.length; i++) {
     const requestedsession = termRequest[i].scores.find(asession => asession.sessionName == sessionName)
     const requestedterm = requestedsession.term.find(aterm => aterm.termName == "third")
@@ -385,6 +384,61 @@ const promoteOneStudent = async (req, res, next) => {
   res.status(200).json({ status: "success", message: "Student has been successfully promoted" });
 };
 
+const demoteStudent = async (req, res, next) => {
+  const { admNo, programme } = req.body;
+
+  const theStudent = await Student.findOne({ admNo })
+  const isValidStaff = await Staff.findOne({ email: req.user.email })
+  if (isValidStaff.teacherProgramme != theStudent.programme) {
+    throw new UnAuthorizedError("Error: Sorry, you cannot demote a student of another programme")
+  }
+  const student = await Student.findOne({ admNo })
+  if (!student) throw new NotFoundError("Error: no such student found");
+
+  switch (student.presentClass) {
+    // case "tamhidi":
+    //   student.presentClass = "hadoonah"
+    //   break;
+    case "hadoonah":
+      student.presentClass = "tamhidi"
+      break;
+    case "rawdoh":
+      student.presentClass = "hadoonah"
+      break;
+    case "awwal ibtidaahiy":
+      student.presentClass = "rawdoh"
+      break;
+    case "thaani ibtidaahiy":
+      student.presentClass = "awwal ibtidaahiy"
+      break;
+    case "thaalith ibtidaahiy":
+      student.presentClass = "thaani ibtidaahiy"
+      break;
+    case "raabi ibtidaahiy":
+      student.presentClass = "thaalith ibtidaahiy"
+      break;
+    case "khaamis ibtidaahiy":
+      student.presentClass = "raabi idaadiy"
+      break;
+    case "awwal idaadiy":
+      student.presentClass = "khaamis ibtidaahiy"
+      break;
+    case "thaani idaadiy":
+      student.presentClass = "awwal idaadiy"
+      break;
+    case "thaalith idaadiy":
+      student.studentStatus = "thaani idaadiy"
+      break;
+    // default:  
+  }
+  if ((student.programme == "barnamij" || student.programme == "female madrasah") && student.presentClass == "thaalith idaadiy") {
+    student.presentClass = "awwal idaadiy"
+  }
+  await student.save()
+
+  res.status(200).json({ status: "success", message: "Student has been successfully demoted" });
+};
+
 const deleteStudent = async (req, res, next) => {
   let { admNo } = req.query;
 
@@ -414,6 +468,7 @@ module.exports = {
   updateStatus,
   promoteStudents,
   promoteOneStudent,
+  demoteStudent,
   deleteStudent,
 };
 
