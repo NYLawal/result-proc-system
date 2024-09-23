@@ -99,18 +99,18 @@ const getStudents = async (req, res, next) => {
   let students = await Student.find(queryObject);
   const isStaff = await Staff.findOne({ email: req.user.email })
   if (isStaff.isAdmin == false)
-    students = await Student.find({$and: [queryObject, {presentClass:isStaff.teacherClass}, {programme:isStaff.teacherProgramme}, {studentStatus : "current"}]})
-  
+    students = await Student.find({ $and: [queryObject, { presentClass: isStaff.teacherClass }, { programme: isStaff.teacherProgramme }, { studentStatus: "current" }] })
+
   const noOfStudents = students.length;
   let studentsperpage = await Student.find(queryObject)
     .sort({ admNo: 1 })
     .skip((pageNumber - 1) * pageSize)
     .limit(pageSize);
   if (isStaff.isAdmin == false)
-    studentsperpage = await Student.find({$and: [queryObject, {presentClass:isStaff.teacherClass}, {programme:isStaff.teacherProgramme}, {studentStatus : "current"}]})
-    .sort({ admNo: 1 })
-    .skip((pageNumber - 1) * pageSize)
-    .limit(pageSize);
+    studentsperpage = await Student.find({ $and: [queryObject, { presentClass: isStaff.teacherClass }, { programme: isStaff.teacherProgramme }, { studentStatus: "current" }] })
+      .sort({ admNo: 1 })
+      .skip((pageNumber - 1) * pageSize)
+      .limit(pageSize);
 
   if (students.length == 0)
     return next(new Error("Error: no such students found"));
@@ -133,14 +133,20 @@ const getStudents = async (req, res, next) => {
 const getStudentsByClass = async (req, res, next) => {
   let pageNumber = +req.params.page || 1;
   const pageSize = 5;
+  const {presentClass, programme} = req.query;
+  console.log(req.query)
+  let students;
 
   const teacher = await Staff.findOne({ email: req.user.email })
   const teacherClass = teacher.teacherClass
   const teacherProgramme = teacher.teacherProgramme
 
-  const students = await Student.find({ $and: [{ presentClass: teacherClass }, { programme: teacherProgramme }, {studentStatus : "current"} ] }).sort({ admNo: 1 })
+  students = await Student.find({ $and: [{ presentClass: teacherClass }, { programme: teacherProgramme }, { studentStatus: "current" }] }).sort({ admNo: 1 })
+  if (presentClass && programme){
+    students = await Student.find({ $and: [{ presentClass }, { programme }] }).sort({ admNo: 1 })
+  }
   const noOfStudents = students.length;
-  const studentsperpage = await Student.find({ $and: [{ presentClass: teacherClass }, { programme: teacherProgramme }, {studentStatus : "current"}] })
+  const studentsperpage = await Student.find({ $and: [{ presentClass: teacherClass }, { programme: teacherProgramme }, { studentStatus: "current" }] })
     .sort({ gender: -1 })
     .skip((pageNumber - 1) * pageSize)
     .limit(pageSize);
@@ -221,7 +227,7 @@ const updateStudent = async (req, res, next) => {
   const student = await Student.findOneAndUpdate({ admNo }, req.body, { new: true })
   if (!student) return next(new Error("Error: no such student found"));
 
-  const parent = await User.findOne({email:req.body.parentEmail})
+  const parent = await User.findOne({ email: req.body.parentEmail })
   if (parent) parent.userRole = "parent";
 
   res
@@ -235,14 +241,14 @@ const updateStatus = async (req, res, next) => {
   let studentStatus = req.body.status
   let nonStudentStatus = req.body.statusReason
 
-  if (studentStatus == "current"){
-  const student = await Student.findOneAndUpdate({ admNo }, { studentStatus: "current", nonStudentStatus: "graduated" }, { new: true })
-  if (!student) return next(new Error("Error: no such student found"));
+  if (studentStatus == "current") {
+    const student = await Student.findOneAndUpdate({ admNo }, { studentStatus: "current", nonStudentStatus: "graduated" }, { new: true })
+    if (!student) return next(new Error("Error: no such student found"));
   }
 
-  if (studentStatus == "past"){
-  const student = await Student.findOneAndUpdate({ admNo }, { studentStatus: "past", nonStudentStatus }, { new: true })
-  if (!student) return next(new Error("Error: no such student found"));
+  if (studentStatus == "past") {
+    const student = await Student.findOneAndUpdate({ admNo }, { studentStatus: "past", nonStudentStatus }, { new: true })
+    if (!student) return next(new Error("Error: no such student found"));
   }
 
   res
@@ -396,9 +402,6 @@ const demoteStudent = async (req, res, next) => {
   if (!student) throw new NotFoundError("Error: no such student found");
 
   switch (student.presentClass) {
-    // case "tamhidi":
-    //   student.presentClass = "hadoonah"
-    //   break;
     case "hadoonah":
       student.presentClass = "tamhidi"
       break;
@@ -432,11 +435,82 @@ const demoteStudent = async (req, res, next) => {
     // default:  
   }
   if ((student.programme == "barnamij" || student.programme == "female madrasah") && student.presentClass == "thaalith idaadiy") {
-    student.presentClass = "awwal idaadiy"
+    student.presentClass = "thaani idaadiy"
   }
   await student.save()
 
   res.status(200).json({ status: "success", message: "Student has been successfully demoted" });
+};
+
+const demoteAllStudents = async (req, res, next) => {
+  const { programme, sessionName, minscore } = req.body;
+  const isValidStaff = await Staff.findOne({ email: req.user.email })
+  if (isValidStaff.teacherProgramme != programme) {
+    throw new UnAuthorizedError("Error: Sorry, you are not allowed to demote students of other programmes")
+  }
+  const termRequest = await Score.find(
+    {
+      $and:
+        [
+          { programme },
+          { "scores.sessionName": sessionName },
+          { "scores.term.termName": "third" }
+        ]
+    })
+  if (termRequest.length == 0) throw new NotFoundError("Error: no registered scores found");
+
+  for (let i = 0; i < termRequest.length; i++) {
+    const requestedsession = termRequest[i].scores.find(asession => asession.sessionName == sessionName)
+    const requestedterm = requestedsession.term.find(aterm => aterm.termName == "third")
+    const avgpercent = requestedterm.avgPercentage
+
+    // if (avgpercent < minscore) {
+    //   await Student.findOneAndUpdate({ admNo: termRequest[i].admissionNumber }, { classStatus: "repeated" }, { new: true })
+    // }
+    if (avgpercent >= minscore) {
+      const student = await Student.findOne({ admNo: termRequest[i].admissionNumber })
+
+      switch (student.presentClass) {
+        case "hadoonah":
+          student.presentClass = "tamhidi"
+          break;
+        case "rawdoh":
+          student.presentClass = "hadoonah"
+          break;
+        case "awwal ibtidaahiy":
+          student.presentClass = "rawdoh"
+          break;
+        case "thaani ibtidaahiy":
+          student.presentClass = "awwal ibtidaahiy"
+          break;
+        case "thaalith ibtidaahiy":
+          student.presentClass = "thaani ibtidaahiy"
+          break;
+        case "raabi ibtidaahiy":
+          student.presentClass = "thaalith ibtidaahiy"
+          break;
+        case "khaamis ibtidaahiy":
+          student.presentClass = "raabi idaadiy"
+          break;
+        case "awwal idaadiy":
+          student.presentClass = "khaamis ibtidaahiy"
+          break;
+        case "thaani idaadiy":
+          student.presentClass = "awwal idaadiy"
+          break;
+        case "thaalith idaadiy":
+          student.studentStatus = "thaani idaadiy"
+          break;
+        // default:  
+      }
+      if ((student.programme == "barnamij" || student.programme == "female madrasah") && student.presentClass == "thaalith idaadiy") {
+        student.presentClass = "thaani idaadiy"
+      }
+      await student.save()
+    }
+
+  }
+  res.status(200).json({ status: "success", message: "Students have been successfully promoted" });
 };
 
 const deleteStudent = async (req, res, next) => {
@@ -451,9 +525,21 @@ const deleteStudent = async (req, res, next) => {
   }
 
   const studenttoDelete = await Student.findOneAndDelete({ admNo });
- 
+
 
   res.status(200).json({ status: "success", message: "student deleted successfully" });
+};
+
+const changeStudentsClass = async (req, res, next) => {
+  const {studentsList} = req.body;
+  const { proposedclass } = req.params;
+
+  for (k = 0; k < studentsList.length; k++) {
+    let admNo = studentsList[k]
+    const student = await Student.findOneAndUpdate({ admNo }, { presentClass: proposedclass }, { new: true })
+  }
+
+  res.status(200).json({ status: "success", message: "The students' class has been successfully changed"});
 };
 
 
@@ -470,5 +556,6 @@ module.exports = {
   promoteOneStudent,
   demoteStudent,
   deleteStudent,
+  changeStudentsClass
 };
 

@@ -28,6 +28,12 @@ const addStaff = async (req, res) => {
   const role = req.body.role;
   let isAdmin = false;
 
+  //allow only a superadmin to add other admin categories
+  const isValidStaff = await Staff.findOne({ email: req.user.email })
+  if (isValidStaff.userRole != "superadmin" && (role === "superadmin" || role === "admin" || role === "bursar")) {
+    throw new UnAuthorizedError(`Error: Sorry, you are not allowed to add someone as ${role}`)
+  }
+
   if (role === "bursar") {
     const bursarExists = await Staff.findOne({ role: "bursar" });
     if (bursarExists) throw new BadUserRequestError("Error: A bursar is already registered");
@@ -170,6 +176,11 @@ const assignAsTeacher = async (req, res, next) => {
   const teacher = await Staff.findOne({ email })
   if (!teacher) throw new NotFoundError("Error: no such staff found");
 
+  const isValidStaff = await Staff.findOne({ email: req.user.email })
+  if (isValidStaff.teacherProgramme != teacherProgramme) {
+    throw new UnAuthorizedError("Error: Sorry, you are not allowed to assign teachers of other programmes")
+  }
+
   let requestedClass = teacher.assignedClasses.find(aclass => aclass.class == teacherClass && aclass.programme == teacherProgramme)
   if (requestedClass || (teacher.teacherClass == teacherClass && teacher.teacherProgramme == teacherProgramme)) throw new BadUserRequestError(`Error: this staffer has already been assigned to ${teacherClass} in ${teacherProgramme}`)
 
@@ -195,6 +206,11 @@ const deassignTeacher = async (req, res, next) => {
   const { email, teacherClass, teacherProgramme } = req.body
   const teacher = await Staff.findOne({ email })
   if (!teacher) throw new NotFoundError("Error: no such staff found");
+
+  const isValidStaff = await Staff.findOne({ email: req.user.email })
+  if (isValidStaff.teacherProgramme != teacherProgramme) {
+    throw new UnAuthorizedError("Error: Sorry, you are not allowed to deassign teachers of other programmes")
+  }
 
   // check if staffer has any assigned classes
   if (teacher.assignedClasses.length == 0) {
