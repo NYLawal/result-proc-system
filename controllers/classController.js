@@ -1,12 +1,9 @@
-
 const sClass = require("../models/classModel");
 const CardDetails = require("../models/carddetailsModel");
 const Staff = require("../models/staffModel");
-const { MailNotSentError, BadUserRequestError, NotFoundError, UnAuthorizedError } =
+const { BadUserRequestError, NotFoundError, UnAuthorizedError } =
   require('../middleware/errors')
 
-const { addStudent } = require("./studentController");
-const { model } = require("mongoose");
 
 const multer = require("multer"); // multer will be used to handle the form data.
 const aws = require("aws-sdk");
@@ -63,10 +60,10 @@ const upload = (str1, str2) =>
   });
 
 const uploadImg = async (req, res, next) => {
-  const classteacher = await Staff.findOne({email:req.user.email})
+  const classteacher = await Staff.findOne({ email: req.user.email })
   const teacher_class = classteacher.teacherClass
   const teacher_programme = classteacher.teacherProgramme
-  const uploadSingle = upload(teacher_class,teacher_programme).single("signatureImage");
+  const uploadSingle = upload(teacher_class, teacher_programme).single("signatureImage");
   uploadSingle(req, res, async (err) => {
     if (err instanceof multer.MulterError) {
       return res.status(404).end("file exceeds accepted standard!");
@@ -82,9 +79,9 @@ const uploadImg = async (req, res, next) => {
 };
 
 const uploadPrplSignature = async (req, res, next) => {
-  const principal = await Staff.findOne({email:req.user.email})
+  const principal = await Staff.findOne({ email: req.user.email })
   const prcpl_programme = principal.teacherProgramme
-  const uploadSingle = upload(prcpl_programme, "principal").single("signatureImage"); 
+  const uploadSingle = upload(prcpl_programme, "principal").single("signatureImage");
   uploadSingle(req, res, async (err) => {
     if (err instanceof multer.MulterError) {
       return res.status(404).end("file exceeds accepted standard!");
@@ -100,7 +97,7 @@ const uploadPrplSignature = async (req, res, next) => {
 };
 
 const uploadPropSignature = async (req, res, next) => {
-  const uploadSingle = upload("madrasah", "proprietor").single("signatureImage"); 
+  const uploadSingle = upload("madrasah", "proprietor").single("signatureImage");
   uploadSingle(req, res, async (err) => {
     if (err instanceof multer.MulterError) {
       return res.status(404).end("file exceeds accepted standard!");
@@ -118,17 +115,17 @@ const uploadPropSignature = async (req, res, next) => {
 // add details for a class
 const addDetails = async (req, res, next) => {
   const { noInClass } = req.body;
-  const {className, programme} = req.query;
+  const { className, programme } = req.query;
   const classExists = await sClass.findOne({
     $and:
-    [
-      {className},
-      {programme}
-    ]
+      [
+        { className },
+        { programme }
+      ]
   })
   if (!classExists) throw new NotFoundError("Error: the requested class does not exist");
-    classExists.noInClass = noInClass 
-    classExists.teacherSignature = req.signature_url, //coming from the uploadImg middleware
+  classExists.noInClass = noInClass
+  classExists.teacherSignature = req.signature_url, //coming from the uploadImg middleware
     classExists.save()
 
   res.status(200).json({
@@ -139,100 +136,107 @@ const addDetails = async (req, res, next) => {
 };
 
 const addPrincipalSignature = async (req, res, next) => {
-  const {programme} = req.query
-  const detailsExist = await CardDetails.findOne({programme})  
-    if (!detailsExist){
-      const addDetails = await CardDetails.create({programme, principalSignature:req.signature_url})
-      return res.status(201).json({
-        status: "Success",
-        message: "principal signature added successfully",
-        addDetails
-      });
-      }
-      detailsExist.principalSignature = req.signature_url;
-      detailsExist.save();
-      
-      res.status(200).json({
-        status: "Success",
-        message: "principal signature updated successfully",
-        detailsExist
+  const { programme } = req.query
+  const detailsExist = await CardDetails.findOne({ programme })
+  if (!detailsExist) {
+    const addDetails = await CardDetails.create({ programme, principalSignature: req.signature_url })
+    return res.status(201).json({
+      status: "Success",
+      message: "principal signature added successfully",
+      addDetails
+    });
+  }
+  detailsExist.principalSignature = req.signature_url;
+  detailsExist.save();
+
+  res.status(200).json({
+    status: "Success",
+    message: "principal signature updated successfully",
+    detailsExist
   });
 };
 
 const addProprietorSignature = async (req, res, next) => {
-  const {programme} = req.query
-  const detailsExist = await CardDetails.find({}) 
-  for (let i=0; i < detailsExist.length; i++) {
+  const { programme } = req.query
+  const detailsExist = await CardDetails.find({})
+  for (let i = 0; i < detailsExist.length; i++) {
     detailsExist[i].proprietorSignature = req.signature_url;
     detailsExist[i].save();
   }
-      
-      res.status(200).json({
-        status: "Success",
-        message: "proprietor signature added successfully",
-        detailsExist
+
+  res.status(200).json({
+    status: "Success",
+    message: "proprietor signature added successfully",
+    detailsExist
   });
 };
 
 const getClassSubjects = async (req, res, next) => {
-  const {className, programme} = req.query;
+  const { className, programme } = req.query;
   const classExists = await sClass.findOne({
-  $and:
-  [
-    {className},
-    {programme}
-  ]
-})
-if (!classExists) throw new NotFoundError("Error: this class has no registered subjects");
-res.status(200).json({ status: "success", message: "successful", classExists });
+    $and:
+      [
+        { className },
+        { programme }
+      ]
+  })
+  if (!classExists) throw new NotFoundError("Error: this class has no registered subjects");
+  res.status(200).json({ status: "success", message: "successful", classExists });
 }
-
 
 const addClassSubject = async (req, res, next) => {
-  const {className, programme} = req.query;
-  const {subject} =req.body;
+  const { className, programme } = req.query;
+  const { subject } = req.body;
   const classExists = await sClass.findOne({
-  $and:
-  [
-    {className},
-    {programme}
-  ]
-})
-// console.log(req.body)
-if (!classExists) throw new NotFoundError("Error: the requested class does not exist");
-for (let count=0; count<classExists.subjects.length; count++){
-  if (classExists.subjects[count] == subject)
-    throw new BadUserRequestError(`Error: ${subject} already exists as a subject for ${className}`);
+    $and:
+      [
+        { className },
+        { programme }
+      ]
+  })
+  // console.log(req.body)
+  if (!classExists) throw new NotFoundError("Error: the requested class does not exist");
+  for (let count = 0; count < classExists.subjects.length; count++) {
+    if (classExists.subjects[count] == subject)
+      throw new BadUserRequestError(`Error: ${subject} already exists as a subject for ${className}`);
+  }
+  classExists.subjects.push(subject);
+  classExists.save();
+  res.status(200).json({ status: "success", message: `${subject} has been added successfully for ${className}`, classExists });
 }
-classExists.subjects.push(subject);
-classExists.save();
-res.status(200).json({ status: "success", message: `${subject} has been added successfully for ${className}`, classExists });
-}
-
 
 const removeClassSubject = async (req, res, next) => {
-  const {className, programme} = req.query;
-  const {subject} = req.body;
+  const { className, programme } = req.query;
+  const { subject } = req.body;
   const classExists = await sClass.findOne({
-  $and:
-  [
-    {className},
-    {programme}
-  ]
-})
-// console.log(req.body)
-if (!classExists) throw new NotFoundError("Error: the requested class does not exist");
-for (let count=0; count<classExists.subjects.length; count++){
-  if (classExists.subjects[count] == subject){
-    classExists.subjects.splice(count,1);
-    classExists.save();
-  return res.status(200).json({ status: "success", message: `${subject} has been removed successfully for ${className}`, classExists });
-}
-}
-throw new BadUserRequestError(`Error: ${subject} does not exist as a subject for ${className}`);
+    $and:
+      [
+        { className },
+        { programme }
+      ]
+  })
+  // console.log(req.body)
+  if (!classExists) throw new NotFoundError("Error: the requested class does not exist");
+  for (let count = 0; count < classExists.subjects.length; count++) {
+    if (classExists.subjects[count] == subject) {
+      classExists.subjects.splice(count, 1);
+      classExists.save();
+      return res.status(200).json({ status: "success", message: `${subject} has been removed successfully for ${className}`, classExists });
+    }
+  }
+  throw new BadUserRequestError(`Error: ${subject} does not exist as a subject for ${className}`);
 
 }
 
 
-
-module.exports = {getClassSubjects, addClassSubject, removeClassSubject, uploadImg, uploadPrplSignature, uploadPropSignature, addDetails, addPrincipalSignature, addProprietorSignature}
+module.exports = {
+  getClassSubjects,
+  addClassSubject,
+  removeClassSubject,
+  uploadImg,
+  uploadPrplSignature,
+  uploadPropSignature,
+  addDetails,
+  addPrincipalSignature,
+  addProprietorSignature
+}

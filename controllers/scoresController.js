@@ -5,14 +5,8 @@ const Score = require("../models/scoreModel");
 const sClass = require("../models/classModel");
 const CardDetails = require("../models/carddetailsModel");
 const Attendance = require("../models/attendanceModel");
-const { MailNotSentError, BadUserRequestError, NotFoundError, UnAuthorizedError } =
+const { BadUserRequestError, NotFoundError, UnAuthorizedError } =
   require('../middleware/errors')
-const {
-  addScoresValidation,
-  addCommentValidation
-} = require("../validators/scoresValidator");
-const { addStudent } = require("./studentController");
-
 
 
 const addTermComment = async (req, res, next) => {
@@ -563,82 +557,6 @@ const updateScores = async (req, res, next) => {
 }
 
 
-const markAttendance = async (req, res, next) => {
-  const { className, termName, sessionName, programme } = req.query;
-
-  for (let count = 0; count < req.body.length; count++) {
-    let dayattendance = {
-      termdate: req.body[count].termdate,
-      presence: req.body[count].presence,
-    }
-    const studentExists = await Attendance.findOne(
-      {
-        $and:
-          [
-            { admissionNumber: req.body[count].admissionNumber },
-            { student_name: req.body[count].student_name },
-          ]
-      })
-
-    if (!studentExists) {
-      const addStudent = await Attendance.create({ admissionNumber: req.body[count].admissionNumber, student_name: req.body[count].student_name, programme });
-
-      let timeOfYear = {
-        sessionName,
-        className,
-        term: {
-          termName,
-          attendance: dayattendance
-        }
-      }
-      addStudent.attendanceRecord.push(timeOfYear)
-      addStudent.save()
-    }
-
-    else { // student has attendance record
-      for (let recordcount = 0; recordcount < studentExists.attendanceRecord.length; recordcount++) {
-        const sessionMatch = studentExists.attendanceRecord.find(asession => asession.sessionName == sessionName)
-        if (!sessionMatch) { // if session requested not seen
-          let timeOfYear = {
-            sessionName,
-            className,
-            term: {
-              termName,
-              attendance: dayattendance
-            }
-
-          }
-          studentExists.attendanceRecord.push(timeOfYear)
-          studentExists.save()
-        }
-        else { // if session requested seen
-          const termMatch = studentExists.attendanceRecord[recordcount].term.find(aterm => aterm.termName == termName)
-          if (!termMatch) { //term not seen
-
-            let termOfSession = {
-              termName,
-              attendance: dayattendance
-
-            }
-            studentExists.attendanceRecord[recordcount].term.push(termOfSession)
-            studentExists.save()
-          }
-          else { // term seen
-            for (let atdcount = 0; atdcount < termMatch.attendance.length; atdcount++) {
-              if (termMatch.attendance[atdcount].termdate == req.body[count].termdate) { throw new BadUserRequestError("Error: attendance already exists for this date") }
-            }
-
-            termMatch.attendance.push(dayattendance)
-            studentExists.save()
-          }
-        }
-      }
-    }
-  }
-  return res.status(200).json({ status: "Success", message: `attendance updated successfully` });
-}
-
-
 const deleteScores = async (req, res, next) => {
   const { termName, sessionName, programme, admNo } = req.query
   const isValidStaff = await Staff.findOne({ email: req.user.email })
@@ -709,6 +627,6 @@ const deleteStudentScores = async (req, res, next) => {
 
 
 
-module.exports = { addScores, getScores, getTermlyScores, getScoresBySession, getClassScores, promoteStudents, updateScores, addTermComment, markAttendance, deleteScores }
+module.exports = { addScores, getScores, getTermlyScores, getScoresBySession, getClassScores, promoteStudents, updateScores, addTermComment, deleteScores }
 
 

@@ -13,6 +13,7 @@ const staffRouter = require('./routers/staffRouter');
 const studentRouter = require('./routers/studentRouter');
 const scoreRouter = require('./routers/scoreRouter');
 const classRouter = require('./routers/classRouter');
+const attendanceRouter = require('./routers/attendanceRouter');
 const homeRouter = require('./routers/homeRouter');
 const userRouter = require('./routers/userRouter');
 const assessmentRouter = require('./routers/assessmentRouter');
@@ -52,6 +53,7 @@ app.use('/api/v1/student', studentRouter )
 app.use('/api/v1/scores', scoreRouter )
 app.use('/api/v1/class', classRouter )
 app.use('/api/v1/assessment', assessmentRouter )
+app.use('/api/v1/attendance', attendanceRouter )
 app.use(errorHandler)
 
  const port = process.env.PORT || 5000
