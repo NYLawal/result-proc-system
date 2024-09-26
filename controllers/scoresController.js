@@ -580,42 +580,6 @@ const deleteScores = async (req, res, next) => {
 }
 
 
-const deleteStudentScores = async (req, res, next) => {
-
-  const { admNo } = req.query;
-  const isStudent = await Student.findOne({ admNo })
-  // check whether student exists in the scores database
-  //if not, return error message
-  if (!isStudent) {
-    return next(new Error("Error: no such student found"));
-  }
-
-  if (req.user.role == "admin") {
-    const isValidStaff = await Staff.findOne({ email: req.user.email })
-    if (isValidStaff.teacherProgramme != isStudent.programme) {
-      throw new UnAuthorizedError("Error: Sorry, you are not allowed to delete scores for students of other programmes")
-    }
-  }
-  
-  const alreadyHasScores = await Score.findOne({ studentId: isStudent._id })
-  if (!alreadyHasScores) throw new NotFoundError("Error: no scores registered for this student");
-  else { // if yes, return all registerd scores and attendance for the student in the session and year queried
-
-    const stdScores = await Score.findOne({ admissionNumber: admNo })
-
-    //get scores
-    let result = alreadyHasScores.scores
-    for (let count = 0; count < result.length; count++) {
-      if (sessionName == result[count].sessionName) {
-        
-       
-      }
-    }
-  }
-  throw new NotFoundError("Error: no scores found for the term specified")
-}
-
-
 
 module.exports = { addScores, getScores, getTermlyScores, getScoresBySession, getClassScores, updateScores, addTermComment, deleteScores }
 

@@ -135,7 +135,6 @@ const getStudentsByClass = async (req, res, next) => {
   let pageNumber = +req.params.page || 1;
   const pageSize = 5;
   const {presentClass, programme} = req.query;
-  console.log(req.query)
   let students;
 
   const teacher = await Staff.findOne({ email: req.user.email })
@@ -144,7 +143,7 @@ const getStudentsByClass = async (req, res, next) => {
 
   students = await Student.find({ $and: [{ presentClass: teacherClass }, { programme: teacherProgramme }, { studentStatus: "current" }] }).sort({ admNo: 1 })
   if (presentClass && programme){
-    students = await Student.find({ $and: [{ presentClass }, { programme }] }).sort({ admNo: 1 })
+    students = await Student.find({ $and: [{ presentClass }, { programme }, { studentStatus: "current" }] }).sort({ admNo: 1 })
   }
   const noOfStudents = students.length;
   const studentsperpage = await Student.find({ $and: [{ presentClass: teacherClass }, { programme: teacherProgramme }, { studentStatus: "current" }] })
@@ -443,77 +442,6 @@ const demoteStudent = async (req, res, next) => {
   await student.save()
 
   res.status(200).json({ status: "success", message: "Student has been successfully demoted" });
-};
-
-const demoteAllStudents = async (req, res, next) => {
-  const { programme, sessionName, minscore } = req.body;
-  const isValidStaff = await Staff.findOne({ email: req.user.email })
-  if (isValidStaff.teacherProgramme != programme) {
-    throw new UnAuthorizedError("Error: Sorry, you are not allowed to demote students of other programmes")
-  }
-  const termRequest = await Score.find(
-    {
-      $and:
-        [
-          { programme },
-          { "scores.sessionName": sessionName },
-          { "scores.term.termName": "third" }
-        ]
-    })
-  if (termRequest.length == 0) throw new NotFoundError("Error: no registered scores found");
-
-  for (let i = 0; i < termRequest.length; i++) {
-    const requestedsession = termRequest[i].scores.find(asession => asession.sessionName == sessionName)
-    const requestedterm = requestedsession.term.find(aterm => aterm.termName == "third")
-    const avgpercent = requestedterm.avgPercentage
-
-    // if (avgpercent < minscore) {
-    //   await Student.findOneAndUpdate({ admNo: termRequest[i].admissionNumber }, { classStatus: "repeated" }, { new: true })
-    // }
-    if (avgpercent >= minscore) {
-      const student = await Student.findOne({ admNo: termRequest[i].admissionNumber })
-
-      switch (student.presentClass) {
-        case "hadoonah":
-          student.presentClass = "tamhidi"
-          break;
-        case "rawdoh":
-          student.presentClass = "hadoonah"
-          break;
-        case "awwal ibtidaahiy":
-          student.presentClass = "rawdoh"
-          break;
-        case "thaani ibtidaahiy":
-          student.presentClass = "awwal ibtidaahiy"
-          break;
-        case "thaalith ibtidaahiy":
-          student.presentClass = "thaani ibtidaahiy"
-          break;
-        case "raabi ibtidaahiy":
-          student.presentClass = "thaalith ibtidaahiy"
-          break;
-        case "khaamis ibtidaahiy":
-          student.presentClass = "raabi idaadiy"
-          break;
-        case "awwal idaadiy":
-          student.presentClass = "khaamis ibtidaahiy"
-          break;
-        case "thaani idaadiy":
-          student.presentClass = "awwal idaadiy"
-          break;
-        case "thaalith idaadiy":
-          student.studentStatus = "thaani idaadiy"
-          break;
-        // default:  
-      }
-      if ((student.programme == "barnamij" || student.programme == "female madrasah") && student.presentClass == "thaalith idaadiy") {
-        student.presentClass = "thaani idaadiy"
-      }
-      await student.save()
-    }
-
-  }
-  res.status(200).json({ status: "success", message: "Students have been successfully promoted" });
 };
 
 const deleteStudent = async (req, res, next) => {

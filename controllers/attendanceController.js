@@ -1,7 +1,6 @@
 const Attendance = require("../models/attendanceModel");
 const { BadUserRequestError, NotFoundError, UnAuthorizedError } =
     require('../middleware/errors');
-const { findOneAndUpdate } = require("../models/userModel");
 
 
 const markAttendance = async (req, res, next) => {
@@ -21,9 +20,7 @@ const markAttendance = async (req, res, next) => {
                         { programme }
                     ]
             })
-            console.log("student exists")
             if (!studentExists) {
-            console.log("student doesn't exist")
             const addStudent = await Attendance.create({ admissionNumber: req.body[count].admissionNumber, student_name: req.body[count].student_name, programme });
 
             let timeOfYear = {
@@ -42,7 +39,6 @@ const markAttendance = async (req, res, next) => {
             for (let recordcount = 0; recordcount < studentExists.attendanceRecord.length; recordcount++) {
                 const sessionMatch = studentExists.attendanceRecord.find(asession => asession.sessionName == sessionName)
                 if (!sessionMatch) { // if session requested not seen
-                    console.log("session not seen")
                     let timeOfYear = {
                         sessionName,
                         className,
@@ -56,10 +52,8 @@ const markAttendance = async (req, res, next) => {
                     break;
                 }
                 else { // if session requested seen
-                    console.log("session seen")
                     const termMatch = sessionMatch.term.find(aterm => aterm.termName == termName)
                     if (!termMatch) { //term not seen
-                        console.log("term not seen")
                         let termOfSession = {
                             termName,
                             attendance: dayattendance
@@ -69,13 +63,9 @@ const markAttendance = async (req, res, next) => {
                         break;
                     }
                     else { // term seen
-                        console.log("term seen")
-                        console.log(termMatch.attendance)
-                        console.log(termMatch.attendance.length)
                         for (let atdcount = 0; atdcount < termMatch.attendance.length; atdcount++) {
                             if (termMatch.attendance[atdcount].termdate == req.body[count].termdate) { throw new BadUserRequestError("Error: attendance already exists for this date") }
                         }
-
                         termMatch.attendance.push(dayattendance)
                         studentExists.save()
                         break;
