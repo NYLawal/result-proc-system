@@ -447,16 +447,6 @@ const getClassScores = async (req, res, next) => {
 }
 
 
-const promoteStudents = async (req, res, next) => {
-  const scores = await Score.find({});
-  if (!scores) {
-    return next(new Error("Error: no scores recorded"));
-  }
-  const passed = scores.
-    res.status(200).json({ status: "success", scores, message: "scores returned successfully!" });
-};
-
-
 const updateScores = async (req, res, next) => {
   const { admNo } = req.query
   // console.log(req.body)
@@ -627,6 +617,6 @@ const deleteStudentScores = async (req, res, next) => {
 
 
 
-module.exports = { addScores, getScores, getTermlyScores, getScoresBySession, getClassScores, promoteStudents, updateScores, addTermComment, deleteScores }
+module.exports = { addScores, getScores, getTermlyScores, getScoresBySession, getClassScores, updateScores, addTermComment, deleteScores }
 
 

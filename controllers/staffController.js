@@ -176,11 +176,12 @@ const assignAsTeacher = async (req, res, next) => {
   const teacher = await Staff.findOne({ email })
   if (!teacher) throw new NotFoundError("Error: no such staff found");
 
-  const isValidStaff = await Staff.findOne({ email: req.user.email })
-  if (isValidStaff.teacherProgramme != teacherProgramme) {
-    throw new UnAuthorizedError("Error: Sorry, you are not allowed to assign teachers of other programmes")
+  if (req.user.role != "superadmin") {
+    const isValidStaff = await Staff.findOne({ email: req.user.email })
+    if (isValidStaff.teacherProgramme != teacherProgramme) {
+      throw new UnAuthorizedError("Error: Sorry, you are not allowed to assign teachers of other programmes")
+    }
   }
-
   let requestedClass = teacher.assignedClasses.find(aclass => aclass.class == teacherClass && aclass.programme == teacherProgramme)
   if (requestedClass || (teacher.teacherClass == teacherClass && teacher.teacherProgramme == teacherProgramme)) throw new BadUserRequestError(`Error: this staffer has already been assigned to ${teacherClass} in ${teacherProgramme}`)
 
@@ -207,11 +208,12 @@ const deassignTeacher = async (req, res, next) => {
   const teacher = await Staff.findOne({ email })
   if (!teacher) throw new NotFoundError("Error: no such staff found");
 
-  const isValidStaff = await Staff.findOne({ email: req.user.email })
-  if (isValidStaff.teacherProgramme != teacherProgramme) {
-    throw new UnAuthorizedError("Error: Sorry, you are not allowed to deassign teachers of other programmes")
+  if (req.user.role != "superadmin") {
+    const isValidStaff = await Staff.findOne({ email: req.user.email })
+    if (isValidStaff.teacherProgramme != teacherProgramme) {
+      throw new UnAuthorizedError("Error: Sorry, you are not allowed to deassign teachers of other programmes")
+    }
   }
-
   // check if staffer has any assigned classes
   if (teacher.assignedClasses.length == 0) {
     throw new BadUserRequestError("Error: no assigned classes found for the staffer ")

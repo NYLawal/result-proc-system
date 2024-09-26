@@ -3,6 +3,7 @@ const Student = require("../models/studentModel");
 const Staff = require("../models/staffModel");
 const User = require("../models/userModel");
 const Score = require("../models/scoreModel");
+const Attendance = require("../models/attendanceModel");
 const {
   newStudentValidation,
   updateStudentValidation,
@@ -272,6 +273,7 @@ const promoteStudents = async (req, res, next) => {
           { "scores.term.termName": "third" }
         ]
     })
+    console.log(termRequest)
   if (termRequest.length == 0) throw new NotFoundError("Error: no registered scores found");
 
   for (let i = 0; i < termRequest.length; i++) {
@@ -284,6 +286,7 @@ const promoteStudents = async (req, res, next) => {
     }
     else if (avgpercent >= minscore) {
       const student = await Student.findOne({ admNo: termRequest[i].admissionNumber })
+      
 
       switch (student.presentClass) {
         case "tamhidi":
@@ -525,7 +528,8 @@ const deleteStudent = async (req, res, next) => {
   }
 
   const studenttoDelete = await Student.findOneAndDelete({ admNo });
-
+  await Score.findOneAndDelete({ admissionNumber: admNo })
+  await Attendance.findOneAndDelete({ admissionNumber: admNo })
 
   res.status(200).json({ status: "success", message: "student deleted successfully" });
 };
