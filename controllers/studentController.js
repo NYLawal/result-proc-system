@@ -172,7 +172,7 @@ const getStudentsByClass = async (req, res, next) => {
 const getOneStudent = async (req, res, next) => {
   const { admNo } = req.query;
   const student = await Student.findOne({ admNo });
-  dbDebugger(student);
+  console.log(student);
   if (!student) return next(new Error("Error: no such student found"));
   res.status(200).json({ status: "success", student, msg: "student found!" });
 };
@@ -423,7 +423,7 @@ const demoteStudent = async (req, res, next) => {
       student.presentClass = "thaalith ibtidaahiy"
       break;
     case "khaamis ibtidaahiy":
-      student.presentClass = "raabi idaadiy"
+      student.presentClass = "raabi ibtidaahiy"
       break;
     case "awwal idaadiy":
       student.presentClass = "khaamis ibtidaahiy"
