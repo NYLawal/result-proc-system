@@ -33,12 +33,16 @@ const addStudent = async (req, res, next) => {
   if (admnoExists) throw new BadUserRequestError("Error: A student with this admission number already exists");
 
   const parent = await User.findOne({ email: req.body.parentEmail })
-  if (parent) parent.userRole = "parent";
-  parent.save()
+  if (parent) {
+    parent.userRole = "parent";
+    parent.save()
+  }
 
   const isStudent = await User.findOne({ email: req.body.email })
-  if (isStudent) isStudent.userRole = "student";
-  isStudent.save()
+  if (isStudent) {
+    isStudent.userRole = "student";
+    isStudent.save()
+  }
 
   const student = await Student.create(req.body);
   res.status(201).json({ status: "success", student, message: "Student added successfully" });
@@ -236,12 +240,16 @@ const updateStudent = async (req, res, next) => {
   if (!student) return next(new Error("Error: no such student found"));
 
   const parent = await User.findOne({ email: req.body.parentEmail })
-  if (parent) parent.userRole = "parent";
-  parent.save()
-  
+  if (parent) {
+    parent.userRole = "parent";
+    parent.save()
+  }
+
   const isStudent = await User.findOne({ email: req.body.email })
-  if (isStudent) isStudent.userRole = "student";
-  isStudent.save()
+  if (isStudent) {
+    isStudent.userRole = "student";
+    isStudent.save()
+  }
 
   res
     .status(200)
