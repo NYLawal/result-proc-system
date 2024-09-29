@@ -32,6 +32,14 @@ const addStudent = async (req, res, next) => {
   const admnoExists = await Student.findOne({ admNo: req.body.admNo });
   if (admnoExists) throw new BadUserRequestError("Error: A student with this admission number already exists");
 
+  const parent = await User.findOne({ email: req.body.parentEmail })
+  if (parent) parent.userRole = "parent";
+  parent.save()
+
+  const isStudent = await User.findOne({ email: req.body.email })
+  if (isStudent) isStudent.userRole = "student";
+  isStudent.save()
+
   const student = await Student.create(req.body);
   res.status(201).json({ status: "success", student, message: "Student added successfully" });
 };
@@ -134,7 +142,7 @@ const getStudents = async (req, res, next) => {
 const getStudentsByClass = async (req, res, next) => {
   let pageNumber = +req.params.page || 1;
   const pageSize = 5;
-  const {presentClass, programme} = req.query;
+  const { presentClass, programme } = req.query;
   let students;
 
   const teacher = await Staff.findOne({ email: req.user.email })
@@ -142,7 +150,7 @@ const getStudentsByClass = async (req, res, next) => {
   const teacherProgramme = teacher.teacherProgramme
 
   students = await Student.find({ $and: [{ presentClass: teacherClass }, { programme: teacherProgramme }, { studentStatus: "current" }] }).sort({ admNo: 1 })
-  if (presentClass && programme){
+  if (presentClass && programme) {
     students = await Student.find({ $and: [{ presentClass }, { programme }, { studentStatus: "current" }] }).sort({ admNo: 1 })
   }
   const noOfStudents = students.length;
@@ -229,6 +237,11 @@ const updateStudent = async (req, res, next) => {
 
   const parent = await User.findOne({ email: req.body.parentEmail })
   if (parent) parent.userRole = "parent";
+  parent.save()
+  
+  const isStudent = await User.findOne({ email: req.body.email })
+  if (isStudent) isStudent.userRole = "student";
+  isStudent.save()
 
   res
     .status(200)
@@ -272,7 +285,7 @@ const promoteStudents = async (req, res, next) => {
           { "scores.term.termName": "third" }
         ]
     })
-    console.log(termRequest)
+  console.log(termRequest)
   if (termRequest.length == 0) throw new NotFoundError("Error: no registered scores found");
 
   for (let i = 0; i < termRequest.length; i++) {
@@ -285,7 +298,7 @@ const promoteStudents = async (req, res, next) => {
     }
     else if (avgpercent >= minscore) {
       const student = await Student.findOne({ admNo: termRequest[i].admissionNumber })
-      
+
 
       switch (student.presentClass) {
         case "tamhidi":
@@ -463,7 +476,7 @@ const deleteStudent = async (req, res, next) => {
 };
 
 const changeStudentsClass = async (req, res, next) => {
-  const {studentsList} = req.body;
+  const { studentsList } = req.body;
   const { proposedclass } = req.params;
 
   for (k = 0; k < studentsList.length; k++) {
@@ -471,7 +484,7 @@ const changeStudentsClass = async (req, res, next) => {
     const student = await Student.findOneAndUpdate({ admNo }, { presentClass: proposedclass }, { new: true })
   }
 
-  res.status(200).json({ status: "success", message: "The students' class has been successfully changed"});
+  res.status(200).json({ status: "success", message: "The students' class has been successfully changed" });
 };
 
 
