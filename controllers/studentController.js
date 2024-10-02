@@ -250,6 +250,18 @@ const updateStudent = async (req, res, next) => {
     isStudent.userRole = "student";
     isStudent.save()
   }
+  // find student in scores database
+  const inScores = await Score.findOne({ admissionNumber: req.body.admNo })
+  if (inScores) {
+    inScores.student_name = req.body.firstName + " " + req.body.lastName
+    inScores.save()
+  }
+  // find student in attendance database
+  const inAttendance = await Attendance.findOne({ admissionNumber: req.body.admNo })
+  if (inAttendance) {
+    inAttendance.student_name = req.body.firstName + " " + req.body.lastName
+    inAttendance.save()
+  }
 
   res
     .status(200)

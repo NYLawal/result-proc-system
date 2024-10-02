@@ -56,9 +56,6 @@ const addScores = async (req, res, next) => {
       for (let subjectcount = 0; subjectcount < req.body.term.subjects.length; subjectcount++) {
         req.body.term.subjects[subjectcount].cumulativeScore = +req.body.term.subjects[subjectcount].totalScore;
         req.body.term.subjects[subjectcount].cumulativeAverage = +req.body.term.subjects[subjectcount].cumulativeScore / noOfTerms;
-
-        console.log(req.body.term.subjects[subjectcount].cumulativeScore)
-        console.log(req.body.term.subjects[subjectcount].cumulativeAverage)
       }
     }
     const addStudent = await Score.create({ ...req.body, studentId: isStudent._id, admissionNumber: isStudent.admNo, student_name: isStudent.firstName + " " + isStudent.lastName, programme: isStudent.programme });
@@ -80,9 +77,10 @@ const addScores = async (req, res, next) => {
   }
   // for existing session and term
   else {
+    // update student's name in scores database
+    if (alreadyHasScores.student_name != isStudent.firstName + " " + isStudent.lastName) alreadyHasScores.student_name = isStudent.firstName + " " + isStudent.lastName
+    
     //check whether student has the subject's scores for the session and term specified
-    // let termName = req.body.term.termName;
-    console.log(req.body.term.termName)
     let sessionName = req.body.sessionName;
     for (let scorescount = 0; scorescount < alreadyHasScores.scores.length; scorescount++) {
       if (sessionName == alreadyHasScores.scores[scorescount].sessionName) {
@@ -126,17 +124,12 @@ const addScores = async (req, res, next) => {
                 }
                 else secondTermScore[0] = 0
 
-                console.log(firstTermScore[0])
-                console.log(secondTermScore[0])
                 if ((firstTermScore[0] != 0 && secondTermScore[0] == 0) || (firstTermScore[0] == 0 && secondTermScore[0] != 0)) noOfTerms = 2
                 else if (firstTermScore[0] != 0 && secondTermScore[0] != 0) noOfTerms = 3
                 console.log("number of terms ", noOfTerms)
 
                 req.body.term.subjects[subjectcount].cumulativeScore = +req.body.term.subjects[subjectcount].totalScore + (+firstTermScore[0]) + (+secondTermScore[0]);
                 req.body.term.subjects[subjectcount].cumulativeAverage = +req.body.term.subjects[subjectcount].cumulativeScore / noOfTerms;
-
-                console.log(req.body.term.subjects[subjectcount].cumulativeScore)
-                console.log(req.body.term.subjects[subjectcount].cumulativeAverage)
               }
 
               req.body.term.grandTotal = req.body.term.subjects.length * 100;
@@ -195,17 +188,12 @@ const addScores = async (req, res, next) => {
             }
             else secondTermScore[0] = 0
 
-            console.log(firstTermScore[0])
-            console.log(secondTermScore[0])
             if ((firstTermScore[0] != 0 && secondTermScore[0] == 0) || (firstTermScore[0] == 0 && secondTermScore[0] != 0)) noOfTerms = 2
             else if (firstTermScore[0] != 0 && secondTermScore[0] != 0) noOfTerms = 3
             console.log("number of terms ", noOfTerms)
 
             req.body.term.subjects[subjectcount].cumulativeScore = +req.body.term.subjects[subjectcount].totalScore + (+firstTermScore[0]) + (+secondTermScore[0]);
             req.body.term.subjects[subjectcount].cumulativeAverage = +req.body.term.subjects[subjectcount].cumulativeScore / noOfTerms;
-
-            console.log(req.body.term.subjects[subjectcount].cumulativeScore)
-            console.log(req.body.term.subjects[subjectcount].cumulativeAverage)
           }
 
           req.body.term.grandTotal = req.body.term.subjects.length * 100;
@@ -578,6 +566,20 @@ const deleteScores = async (req, res, next) => {
   }
   throw new NotFoundError("Error: no scores found for the session specified")
 }
+
+// TROUBLESHOOTING FOR DUPLICATES IN SCORES DATABASE
+// const getDuplicates = async (req, res, next) => {
+//   let myArray = [];
+//   const allstudents = await Student.find({})
+//   console.log(allstudents.length)
+//   for (let num=0; num < allstudents.length; num++){
+//     let isdup = await Score.find({admissionNumber: allstudents[num].admNo})
+//     if (isdup.length > 1 ){myArray.push(allstudents[num].admNo)}
+//   }
+
+
+//   res.status(200).json({ status: "success", message: "successful", myArray });
+// }
 
 
 

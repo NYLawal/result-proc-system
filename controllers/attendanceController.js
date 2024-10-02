@@ -18,7 +18,7 @@ const markAttendance = async (req, res, next) => {
                 $and:
                     [
                         { admissionNumber: req.body[count].admissionNumber },
-                        { student_name: req.body[count].student_name },
+                        // { student_name: req.body[count].student_name },
                         { programme }
                     ]
             })
@@ -38,6 +38,9 @@ const markAttendance = async (req, res, next) => {
         }
 
         else { // student has attendance record
+            // update student's name in attendance database
+            if (studentExists.student_name != req.body[count].student_name) studentExists.student_name = req.body[count].student_name
+
             for (let recordcount = 0; recordcount < studentExists.attendanceRecord.length; recordcount++) {
                 const sessionMatch = studentExists.attendanceRecord.find(asession => asession.sessionName == sessionName)
                 if (!sessionMatch) { // if session requested not seen
@@ -97,6 +100,7 @@ const getAttendance = async (req, res, next) => {
         ]
     })
     if (attendanceExists.length == 0) throw new NotFoundError("Error: the requested class attendance does not exist");
+
     //get attendance
     for (let recordcount = 0; recordcount < attendanceExists.length; recordcount++) {
         let studentAtd = attendanceExists[recordcount].attendanceRecord // attendance record for the student for all sessions available
@@ -116,7 +120,7 @@ const getAttendance = async (req, res, next) => {
 }
 
 const getOneAttendance = async (req, res, next) => {
-    const {admissionNumber, termName, sessionName } = req.query;
+    const { admissionNumber, termName, sessionName } = req.query;
     const isStudent = await Student.findOne({ admNo: admissionNumber })
 
     if (req.user.role == "parent") {
@@ -312,4 +316,4 @@ const deleteTermAttendance = async (req, res, next) => {
 
 
 
-module.exports = { markAttendance, getAttendance,  getOneAttendance, editAttendanceDate, editAttendanceStatus, deleteDayAttendance, deleteTermAttendance }
+module.exports = { markAttendance, getAttendance, getOneAttendance, editAttendanceDate, editAttendanceStatus, deleteDayAttendance, deleteTermAttendance }
