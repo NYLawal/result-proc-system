@@ -156,7 +156,7 @@ const editAttendanceDate = async (req, res, next) => {
 
     if (req.user.role == "admin") {
         const isValidStaff = await Staff.findOne({ email: req.user.email })
-        if (isValidStaff.teacherProgramme != isStudent.programme) {
+        if (isValidStaff.teacherProgramme != programme) {
             throw new UnAuthorizedError("Error: Sorry, you are not allowed to edit attendance for students of other programmes")
         }
     }
@@ -198,7 +198,7 @@ const editAttendanceStatus = async (req, res, next) => {
 
     if (req.user.role == "admin") {
         const isValidStaff = await Staff.findOne({ email: req.user.email })
-        if (isValidStaff.teacherProgramme != isStudent.programme) {
+        if (isValidStaff.teacherProgramme != programme) {
             throw new UnAuthorizedError("Error: Sorry, you are not allowed to edit attendance for students of other programmes")
         }
     }
@@ -239,7 +239,7 @@ const deleteDayAttendance = async (req, res, next) => {
 
     if (req.user.role == "admin") {
         const isValidStaff = await Staff.findOne({ email: req.user.email })
-        if (isValidStaff.teacherProgramme != isStudent.programme) {
+        if (isValidStaff.teacherProgramme != programme) {
             throw new UnAuthorizedError("Error: Sorry, you are not allowed to delete attendance for students of other programmes")
         }
     }
@@ -278,7 +278,7 @@ const deleteTermAttendance = async (req, res, next) => {
 
     if (req.user.role == "admin") {
         const isValidStaff = await Staff.findOne({ email: req.user.email })
-        if (isValidStaff.teacherProgramme != isStudent.programme) {
+        if (isValidStaff.teacherProgramme != programme) {
             throw new UnAuthorizedError("Error: Sorry, you are not allowed to delete attendance for students of other programmes")
         }
     }
