@@ -274,7 +274,7 @@ const updateStaff = async (req, res, next) => {
 
   const { email } = req.body;
 
-  const user = await User.findOneAndUpdate({ email: req.body.email }, { userRole }, { otherRole }, {
+  const user = await User.findOneAndUpdate({ email: req.body.email },  { userRole, otherRole }, {
     new: true,
   });
   if (!user) throw new NotFoundError("Error: This staff is not registered. They need to sign up before their details can be updated");

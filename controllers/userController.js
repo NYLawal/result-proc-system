@@ -99,7 +99,6 @@ const resetPassword = async (req, res) => {
     if (error) throw error
 
     const user = await User.findById(req.params.userId);
-    console.log(req.params.userId);
     if (!user) return res.status(400).send("Invalid link");
 
     const token = await Token.findOne({
