@@ -305,7 +305,7 @@ const promoteStudents = async (req, res, next) => {
           { "scores.term.termName": "third" }
         ]
     })
-  console.log(termRequest)
+
   if (termRequest.length == 0) throw new NotFoundError("Error: no registered scores found");
 
   for (let i = 0; i < termRequest.length; i++) {
@@ -360,6 +360,10 @@ const promoteStudents = async (req, res, next) => {
       if ((student.programme == "barnamij" || student.programme == "female madrasah") && student.presentClass == "thaalith idaadiy") {
         student.studentStatus = "past";
         student.presentClass = "thaani idaadiy"
+      }
+      if ((student.programme == "adult madrasah") && student.presentClass == "thaalith idaadiy") {
+        student.presentClass = "mutawasith"
+        student.studentStatus = "current"
       }
       await student.save()
     }
@@ -420,6 +424,10 @@ const promoteOneStudent = async (req, res, next) => {
     student.studentStatus = "past";
     student.presentClass = "thaani idaadiy"
   }
+  if ((student.programme == "adult madrasah") && student.presentClass == "thaalith idaadiy") {
+    student.presentClass = "mutawasith"
+    student.studentStatus = "current"
+  }
   await student.save()
 
   res.status(200).json({ status: "success", message: "Student has been successfully promoted" });
@@ -465,7 +473,10 @@ const demoteStudent = async (req, res, next) => {
       student.presentClass = "awwal idaadiy"
       break;
     case "thaalith idaadiy":
-      student.studentStatus = "thaani idaadiy"
+      student.presentClass = "thaani idaadiy"
+      break;
+    case "mutawasith":
+      student.presentClass = "thaalith idaadiy"
       break;
     // default:  
   }
