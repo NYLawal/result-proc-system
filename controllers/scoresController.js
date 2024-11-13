@@ -286,8 +286,9 @@ const getScores = async (req, res, next) => {
     for (let count = 0; count < result.length; count++) {
       if (sessionName == result[count].sessionName) {
         let className = result[count].className
+        let programme = alreadyHasScores.programme
         //check for the class details
-        let classmatch = await sClass.findOne({ className })
+        let classmatch = await sClass.findOne({$and: [{className}, {programme} ]})
         let noInClass = classmatch.noInClass
         let teacherSignature = classmatch.teacherSignature
         //check for term scores
