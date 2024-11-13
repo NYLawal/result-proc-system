@@ -39,6 +39,33 @@ const addTermComment = async (req, res, next) => {
 }
 
 
+const addStudentsComments = async (req, res, next) => {
+  const { className, termName, sessionName } = req.query;
+
+  for (let n = 0; n < req.body.stdscomments.length; n++) {
+     let admNo = req.body.stdscomments[n].admNo
+     let comment = req.body.stdscomments[n].comment
+
+    const theStudent = await Score.findOne({ admissionNumber : admNo })
+    let result = theStudent.scores
+    for (let count = 0; count < result.length; count++) {
+      if (sessionName == result[count].sessionName && className == result[count].className) {
+        //check for term
+        for (let termcount = 0; termcount < result[count].term.length; termcount++) {
+          if (termName == result[count].term[termcount].termName) {
+            result[count].term[termcount].ameedComment = comment
+            theStudent.save()
+          }
+        }
+      }
+    }
+
+  }
+
+  res.status(201).json({ status: "success", message: "Comments have been added successfully" });
+}
+
+
 const addScores = async (req, res, next) => {
   let termName = req.body.term.termName;
   const { admNo } = req.query
@@ -288,7 +315,7 @@ const getScores = async (req, res, next) => {
         let className = result[count].className
         let programme = alreadyHasScores.programme
         //check for the class details
-        let classmatch = await sClass.findOne({$and: [{className}, {programme} ]})
+        let classmatch = await sClass.findOne({ $and: [{ className }, { programme }] })
         let noInClass = classmatch.noInClass
         let teacherSignature = classmatch.teacherSignature
         //check for term scores
@@ -420,7 +447,7 @@ const getClassScores = async (req, res, next) => {
         ]
     })
 
-    // filter the students that are in the requested class in the requested session from the students returned
+  // filter the students that are in the requested class in the requested session from the students returned
   if (detailsFound.length == 0 && attendanceExists.length == 0) throw new NotFoundError("Error: this class has no report for the term/session specified");
   for (let n = 0; n < detailsFound.length; n++) {
     const requestedclass = detailsFound[n].scores.find(asession => asession.sessionName == sessionName)
@@ -592,6 +619,6 @@ const deleteScores = async (req, res, next) => {
 
 
 
-module.exports = { addScores, getScores, getTermlyScores, getScoresBySession, getClassScores, updateScores, addTermComment, deleteScores }
+module.exports = { addScores, getScores, getTermlyScores, getScoresBySession, getClassScores, updateScores, addTermComment, addStudentsComments, deleteScores }
 
 

@@ -30,24 +30,11 @@ const scoreSchema = new mongoose.Schema({
           grandTotal:Number,
           marksObtained:Number,
           avgPercentage:Number,
-          // attendance:[{
-          //   termdate:String,
-          //   presence:String
-          // }]
       }],
       
     }]
     
 })
-
-// scoreSchema.pre('save', async function() {
-//   console.log(this.scores.term)
-//   this.grandTotal = this.scores.term.subjects.length * 100;
-//   this.marksObtained = scores.term.subjects.reduce((accumulator , score) => {
-//     return accumulator += score.totalScore;
-//   }, 0)
-//   this.avgPercentage = (this.marksObtained/this.grandTotal) * 100
-//  })
 
 module.exports = mongoose.model('Scores', scoreSchema)
 
