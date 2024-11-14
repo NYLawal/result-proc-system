@@ -50,13 +50,12 @@ const upload = (str1, str2) =>
     }),
     fileFilter: (req, file, cb) => {
       if (
-        file.mimetype == "image/png" ||
-        file.mimetype == "image/jpg" ||
-        file.mimetype == "image/jpeg"
+        file.mimetype == "image/png"
       ) {
         cb(null, true);
-      } else return cb(new BadUserRequestError("Invalid file type"));
+      } else return cb(new BadUserRequestError("Invalid file type! Only png files are accepted. Make sure your signature has a transparent background"));
     },
+    limits: {fileSize: 1024 * 1024}
   });
 
 const uploadImg = async (req, res, next) => {
@@ -66,7 +65,7 @@ const uploadImg = async (req, res, next) => {
   const uploadSingle = upload(teacher_class, teacher_programme).single("signatureImage");
   uploadSingle(req, res, async (err) => {
     if (err instanceof multer.MulterError) {
-      return res.status(404).end("file exceeds accepted standard!");
+      return res.status(404).end("file exceeds accepted standard! Not more than 1MB");
     } else if (err) {
       return res.status(404).end(err.message);
     } else if (!req.file) {
@@ -84,7 +83,7 @@ const uploadPrplSignature = async (req, res, next) => {
   const uploadSingle = upload(prcpl_programme, "principal").single("signatureImage");
   uploadSingle(req, res, async (err) => {
     if (err instanceof multer.MulterError) {
-      return res.status(404).end("file exceeds accepted standard!");
+      return res.status(404).end("file exceeds accepted standard! Not more than 1MB");
     } else if (err) {
       return res.status(404).end(err.message);
     } else if (!req.file) {
@@ -100,7 +99,7 @@ const uploadPropSignature = async (req, res, next) => {
   const uploadSingle = upload("madrasah", "proprietor").single("signatureImage");
   uploadSingle(req, res, async (err) => {
     if (err instanceof multer.MulterError) {
-      return res.status(404).end("file exceeds accepted standard!");
+      return res.status(404).end("file exceeds accepted standard! Not more than 1MB");
     } else if (err) {
       return res.status(404).end(err.message);
     } else if (!req.file) {
@@ -126,6 +125,7 @@ const addDetails = async (req, res, next) => {
   if (!classExists) throw new NotFoundError("Error: the requested class does not exist");
   classExists.noInClass = noInClass
   classExists.teacherSignature = req.signature_url, //coming from the uploadImg middleware
+  console.log("signature changed")
     classExists.save()
 
   res.status(200).json({

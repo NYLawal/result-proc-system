@@ -43,10 +43,10 @@ const addStudentsComments = async (req, res, next) => {
   const { className, termName, sessionName } = req.query;
 
   for (let n = 0; n < req.body.stdscomments.length; n++) {
-     let admNo = req.body.stdscomments[n].admNo
-     let comment = req.body.stdscomments[n].comment
+    let admNo = req.body.stdscomments[n].admNo
+    let comment = req.body.stdscomments[n].comment
 
-    const theStudent = await Score.findOne({ admissionNumber : admNo })
+    const theStudent = await Score.findOne({ admissionNumber: admNo })
     let result = theStudent.scores
     for (let count = 0; count < result.length; count++) {
       if (sessionName == result[count].sessionName && className == result[count].className) {
@@ -426,36 +426,6 @@ const getClassScores = async (req, res, next) => {
   const { className, termName, sessionName, programme } = req.query;
   let classExists = [];
 
-  const attendanceExists = await Attendance.find(
-    {
-      $and:
-        [
-          { programme: programme },
-          { "attendanceRecord.className": className },
-          { "attendanceRecord.sessionName": sessionName },
-          { "attendanceRecord.term.termName": termName },
-        ]
-    })
-  const detailsFound = await Score.find(
-    {
-      $and:
-        [
-          { programme: programme },
-          { "scores.className": className },
-          { "scores.sessionName": sessionName },
-          { "scores.term.termName": termName },
-        ]
-    })
-
-  // filter the students that are in the requested class in the requested session from the students returned
-  if (detailsFound.length == 0 && attendanceExists.length == 0) throw new NotFoundError("Error: this class has no report for the term/session specified");
-  for (let n = 0; n < detailsFound.length; n++) {
-    const requestedclass = detailsFound[n].scores.find(asession => asession.sessionName == sessionName)
-    if (requestedclass.className == className) {
-      classExists.push(detailsFound[n])
-    }
-  }
-
   const classRequest = await sClass.findOne({
     $and:
       [
@@ -466,6 +436,40 @@ const getClassScores = async (req, res, next) => {
 
   if (!classRequest) throw new NotFoundError("Error: the requested class does not exist");
   const classSubjects = classRequest.subjects
+
+  const attendanceExists = await Attendance.find(
+    {
+      $and:
+        [
+          { programme: programme },
+          { "attendanceRecord.className": className },
+          { "attendanceRecord.sessionName": sessionName },
+          { "attendanceRecord.term.termName": termName },
+        ]
+    })
+
+  const detailsFound = await Score.find(
+    {
+      $and:
+        [
+          { programme: programme },
+          { "scores.className": className },
+          { "scores.sessionName": sessionName },
+          { "scores.term.termName": termName },
+        ]
+    })
+  
+  if (detailsFound.length != 0) {
+    // filter the students that are in the requested class in the requested session from the students returned
+    for (let n = 0; n < detailsFound.length; n++) {
+      const requestedclass = detailsFound[n].scores.find(asession => asession.sessionName == sessionName)
+      if (requestedclass.className == className) {
+        classExists.push(detailsFound[n])
+      }
+    }
+  }
+  if (classExists.length == 0 && attendanceExists.length == 0) throw new NotFoundError("Error: this class does not have any record for scores or attendance");
+  if (detailsFound.length == 0 || classExists.length == 0) throw new NotFoundError("Error: no scores recorded for this class");
 
   res.status(200).json({ status: "success", message: "successful", classExists, attendanceExists, classSubjects });
 }
