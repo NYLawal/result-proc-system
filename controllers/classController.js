@@ -55,7 +55,7 @@ const upload = (str1, str2) =>
         cb(null, true);
       } else return cb(new BadUserRequestError("Invalid file type! Only png files are accepted. Make sure your signature has a transparent background"));
     },
-    limits: {fileSize: 1024 * 1024}
+    limits: { fileSize: 1024 * 1024 }
   });
 
 const uploadImg = async (req, res, next) => {
@@ -125,7 +125,6 @@ const addDetails = async (req, res, next) => {
   if (!classExists) throw new NotFoundError("Error: the requested class does not exist");
   classExists.noInClass = noInClass
   classExists.teacherSignature = req.signature_url, //coming from the uploadImg middleware
-  console.log("signature changed")
     classExists.save()
 
   res.status(200).json({
