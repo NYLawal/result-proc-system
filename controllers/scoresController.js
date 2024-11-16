@@ -41,11 +41,11 @@ const addTermComment = async (req, res, next) => {
 
 const addStudentsComments = async (req, res, next) => {
   const { className, termName, sessionName } = req.query;
-
+  
   for (let n = 0; n < req.body.stdscomments.length; n++) {
     let admNo = req.body.stdscomments[n].admNo
     let comment = req.body.stdscomments[n].comment
-
+    
     const theStudent = await Score.findOne({ admissionNumber: admNo })
     let result = theStudent.scores
     for (let count = 0; count < result.length; count++) {
@@ -54,12 +54,11 @@ const addStudentsComments = async (req, res, next) => {
         for (let termcount = 0; termcount < result[count].term.length; termcount++) {
           if (termName == result[count].term[termcount].termName) {
             result[count].term[termcount].ameedComment = comment
-            theStudent.save()
           }
         }
       }
     }
-
+    theStudent.save()
   }
 
   res.status(201).json({ status: "success", message: "Comments have been added successfully" });
@@ -356,6 +355,7 @@ const getScores = async (req, res, next) => {
             let nextTermDate = reportcarddetails.nextTermDate
             let principalSign = reportcarddetails.principalSignature
             let proprietorSign = reportcarddetails.proprietorSignature
+            
             return res.status(200).json({
               status: "success", message: `${alreadyHasScores.student_name}`, termName, className, sessionName, report, comment, grandTotal, marksObtained, avgPercentage,
               firstTermScore, secondTermScore, attendance, maxAttendance, noInClass, ameedComment, teacherSignature, principalSign, proprietorSign, nextTermDate

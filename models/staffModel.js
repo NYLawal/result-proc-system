@@ -1,8 +1,5 @@
 const mongoose = require("mongoose");
-const bcrypt = require('bcrypt')
-const jwt = require('jsonwebtoken');
 require('dotenv').config();
-// const config= require('../config/default.json')
 
 const staffSchema = new mongoose.Schema(
   {
@@ -73,19 +70,6 @@ const staffSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
-
-
-// staffSchema.methods.generateToken = function(){
-//   const payload = {
-//     _id: this._id,
-//     email: this.email,
-//     role: this.stafferRole,
-//     isAdmin: this.isAdmin
-//   }
-//   const token = jwt.sign(payload, process.env.jwt_secret_key, { expiresIn: process.env.jwt_lifetime });
-//   return token 
-// }
 
 
 const Staff = mongoose.model("Staff", staffSchema);

@@ -4,6 +4,7 @@ const Staff = require("../models/staffModel");
 const User = require("../models/userModel");
 const Score = require("../models/scoreModel");
 const Attendance = require("../models/attendanceModel");
+const Billing = require("../models/billingsModel");
 const {
   newStudentValidation,
   updateStudentValidation,
@@ -63,6 +64,7 @@ const getStudents = async (req, res, next) => {
   let pageNumber = +req.params.page || 1;
   const pageSize = 10;
   let queryObject = req.query;
+  console.lo
 
   const { admNo, firstName, lastName, gender, address, entryClass, stateOfOrigin, maritalStatus, programme, presentClass, classStatus, studentStatus, paymentStatus } = req.query;
   // let queryObject = {};
@@ -184,9 +186,8 @@ const getStudentsByClass = async (req, res, next) => {
 const getOneStudent = async (req, res, next) => {
   const { admNo } = req.query;
   const student = await Student.findOne({ admNo });
-  console.log(student);
-  if (!student) return next(new Error("Error: no such student found"));
-  res.status(200).json({ status: "success", student, msg: "student found!" });
+  if (!student) return next(new Error("Error: no such student found!"));
+  res.status(200).json({ status: "success", student, message: "student found" });
 };
 
 
@@ -282,13 +283,13 @@ const updateStatus = async (req, res, next) => {
   if (studentStatus == "past") {
     const student = await Student.findOneAndUpdate({ admNo }, { studentStatus: "past", nonStudentStatus }, { new: true })
     if (!student) return next(new Error("Error: no such student found"));
+    await Billing.findOneAndDelete({admNo})
   }
 
   res
     .status(200)
     .json({ status: "success", message: "Student's status has been updated" });
 };
-
 
 const promoteStudents = async (req, res, next) => {
   const { programme, sessionName, minscore } = req.body;

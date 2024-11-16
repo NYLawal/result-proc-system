@@ -43,6 +43,12 @@ function student(req,res,next){
     next()
 }
 
+function bursar(req,res,next){
+    const role = req.user.role
+    if (role !== "bursar") throw new AccessDeniedError("Error: You do not have access to this resource")
+    next()
+}
 
-module.exports = {admin, superAdmin, adminORteacher, teacher, student, adminORteacherORparent, parentORstudent}
+
+module.exports = {admin, superAdmin, adminORteacher, teacher, student, adminORteacherORparent, parentORstudent, bursar}
 

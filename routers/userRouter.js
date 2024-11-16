@@ -3,7 +3,6 @@ const router = express.Router();
 const {userSignUp,userLogIn,forgotPassword,resetPassword,portalRedirect, getUserEmail, sendMessage} 
        = require('../controllers/userController')
 const authenticateUser = require('../middleware/auth')
-const {superAdmin, admin} = require('../middleware/roles')       
 
 
 router.route('/signup').post(userSignUp)
