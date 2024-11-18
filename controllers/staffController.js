@@ -9,7 +9,6 @@ const Staff = require("../models/staffModel");
 const CardDetails = require("../models/carddetailsModel");
 const Token = require('../models/tokenModel')
 
-
 const {
   addStaffValidator,
   editStaffQueryValidator,
@@ -284,7 +283,6 @@ const updateStaff = async (req, res, next) => {
     .status(200)
     .json({ status: "success", message: "Staffer information is up-to-date", staffer });
 };
-
 
 const deleteStaff = async (req, res, next) => {
   const { error } = deleteStaffValidator(req.body);

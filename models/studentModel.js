@@ -57,6 +57,7 @@ const studentSchema = new mongoose.Schema({
 
   phoneNumber: {
     type: String,
+    trim:true,
     required: [true, "contact number cannot be empty"]
   },
 
@@ -94,12 +95,9 @@ const studentSchema = new mongoose.Schema({
   programme: {
     type: String,
     required: [true, "programme cannot be empty"],
-    // enum: {
-    //   values: ["children madrasah", "adult madrasah", "female madrasah", "barnamij"],
-    //   message: "{VALUE} is not supported",
-    // },
     default: "children madrasah",
     lowercase: true,
+    trim:true,
   },
 
   studentStatus: {
@@ -110,6 +108,7 @@ const studentSchema = new mongoose.Schema({
     },
     default: "current",
     lowercase: true,
+    trim:true,
   },
   
   nonStudentStatus: {
@@ -120,6 +119,7 @@ const studentSchema = new mongoose.Schema({
     },
     default: "graduated",
     lowercase: true,
+    trim:true,
   },
 
   registeredOn: {
@@ -130,6 +130,7 @@ const studentSchema = new mongoose.Schema({
   presentClass: {
     type: String,
     lowercase: true,
+    trim:true,
   },
 
   classStatus: {
@@ -150,12 +151,14 @@ const studentSchema = new mongoose.Schema({
     },
     default: "owing",
     lowercase: true,
+    trim:true,
   },
 
   role: {
     type: String,
     default: "student",
     lowercase: true,
+    trim:true,
   },
 
   dateOfRegistration: {

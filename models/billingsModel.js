@@ -4,19 +4,25 @@ const billingSchema = new mongoose.Schema(
     {
         admissionNumber: String,
         studentName: String,
-        tuitionfee: Number,
-        txtbkfee: Number,
-        developmentfee: Number,
-        graduationfee: Number,
-        portalfee: Number,
-        examfee: Number,
-        uniformfee: Number,
-        fulltahfizfee: Number,
-        admissionformfee: Number,
-        parentdiscount: Number,
-        staffdiscount: Number,
-        scholarshipgrant: Number,
-        totalfeesdue: Number,
+        classname: String,
+        session: String,
+        term: String,
+        latestBill: {
+            tuitionfee: Number,
+            txtbkfee: Number,
+            developmentfee: Number,
+            graduationfee: Number,
+            portalfee: Number,
+            examfee: Number,
+            uniformfee: Number,
+            lasttermbalance: Number,
+            fulltahfizfee: Number,
+            admissionformfee: Number,
+            parentdiscount: Number,
+            staffdiscount: Number,
+            scholarshipgrant: Number,
+            totalfeesdue: Number
+        }
     },
 
     { timestamps: true }

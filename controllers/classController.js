@@ -227,8 +227,48 @@ const removeClassSubject = async (req, res, next) => {
 
 }
 
+const addClass = async (req, res, next) => {
+  const { className, programme } = req.body;
+  console.log(req.body)
+  const classExists = await sClass.findOne({
+    $and:
+      [
+        { className },
+        { programme }
+      ]
+  })
+  if (classExists) throw new BadUserRequestError("Error: this class already exists");
+  const classAdded = await sClass.create({...req.body})
+  
+  res.status(201).json({ status: "success", message: `${className} successfully added for ${programme}`, classAdded });
+}
+
+const removeClass = async (req, res, next) => {
+  const { className, programme } = req.body;
+  console.log(req.body)
+  const classExists = await sClass.findOne({
+    $and:
+      [
+        { className },
+        { programme }
+      ]
+  })
+  if (!classExists) throw new NotFoundError("Error: no such class found");
+  const classRemoved = await sClass.findOneAndDelete({
+      $and:
+      [
+        { className },
+        { programme }
+      ]
+  })
+  
+  res.status(201).json({ status: "success", message: `${className} for ${programme} successfully removed`, classRemoved });
+}
+
 
 module.exports = {
+  addClass,
+  removeClass,
   getClassSubjects,
   addClassSubject,
   removeClassSubject,

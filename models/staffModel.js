@@ -6,6 +6,7 @@ const staffSchema = new mongoose.Schema(
     stafferName: {
       type: String,
       required: true,
+      trim:true,
       maxlength: 50
     },
     email: {
@@ -17,6 +18,7 @@ const staffSchema = new mongoose.Schema(
     },
     password: {
       type: String,
+      trim:true,
       maxlength: 1024
     },
     gender: {
@@ -31,11 +33,13 @@ const staffSchema = new mongoose.Schema(
     address: {
       type: String,
       required: true,
+      trim:true,
       maxlength: 255
     },
     phoneNumber: {
       type: String,
       required: true,
+      trim:true,
       maxlength: 25
     },
     teacherClass: {
