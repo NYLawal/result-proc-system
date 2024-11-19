@@ -7,6 +7,8 @@ const billingSchema = new mongoose.Schema(
         classname: String,
         session: String,
         term: String,
+        lastpaymentmade: Number,
+        balancedue: Number,
         latestBill: {
             tuitionfee: Number,
             txtbkfee: Number,
@@ -21,7 +23,7 @@ const billingSchema = new mongoose.Schema(
             parentdiscount: Number,
             staffdiscount: Number,
             scholarshipgrant: Number,
-            totalfeesdue: Number
+            totalfeesdue: Number,
         }
     },
 

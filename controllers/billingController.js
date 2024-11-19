@@ -22,6 +22,8 @@ const updateBills = async (req, res, next) => {
                 ...req.body,
                 admissionNumber: admNo, 
                 studentName,
+                lastpaymentmade: 0,
+                balancedue: req.body.studentsbills[n].totalfeesdue,
                "latestBill.tuitionfee": req.body.studentsbills[n].tuitionfee,
                "latestBill.txtbkfee" : req.body.studentsbills[n].txtbkfee,
                "latestBill.developmentfee" : req.body.studentsbills[n].developmentfee,
@@ -66,9 +68,22 @@ const updateBills = async (req, res, next) => {
 const getBill = async (req, res, next) => {
     const { admNo } = req.query;
     const astudentbill = await Billing.findOne({ admissionNumber : admNo });
-    if (!astudentbill) return next(new Error("Error: no such student found!"));
+    if (!astudentbill) return next(new Error("Error: bill is yet to be set"));
     res.status(200).json({ status: "success", astudentbill, message: "close this to view bill" });
 };
 
+const updateLastPayment = async (req, res, next) => {
+    const { admNo } = req.query;
+    const {lastpay, balancedue} = req.body
 
-module.exports = { updateBills, getBill }
+    const astudentbill = await Billing.findOne({ admissionNumber : admNo });
+    if (!astudentbill) return next(new Error("Error: student not found!"));
+    astudentbill.lastpaymentmade = lastpay;
+    astudentbill.balancedue = balancedue;
+    astudentbill.save();
+
+    res.status(200).json({ status: "success", astudentbill, message: "successfully updated with the latest payment" });
+};
+
+
+module.exports = { updateBills, getBill, updateLastPayment }
