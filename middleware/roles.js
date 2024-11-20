@@ -49,6 +49,13 @@ function bursar(req,res,next){
     next()
 }
 
+function bursarORparentORstudent(req,res,next){
+    const role = req.user.role
+    const otherrole = req.user.other_role
+    if (role !== "bursar" && role !== "parent" && otherrole !== "parent" && role !== "student") throw new AccessDeniedError("Error: You are not authorised to perform this action!")
+    next()
+}
 
-module.exports = {admin, superAdmin, adminORteacher, teacher, student, adminORteacherORparent, parentORstudent, bursar}
+
+module.exports = {admin, superAdmin, adminORteacher, teacher, student, adminORteacherORparent, parentORstudent, bursar,  bursarORparentORstudent}
 

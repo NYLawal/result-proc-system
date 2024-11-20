@@ -29,7 +29,7 @@ const addStaff = async (req, res) => {
 
   //allow only a superadmin to add other admin categories
   const isValidStaff = await Staff.findOne({ email: req.user.email })
-  if (isValidStaff.userRole != "superadmin" && (role === "superadmin" || role === "admin" || role === "bursar")) {
+  if (isValidStaff.role != "superadmin" && (role === "superadmin" || role === "admin" || role === "bursar")) {
     throw new UnAuthorizedError(`Error: Sorry, you are not allowed to add someone as ${role}`)
   }
 
@@ -273,11 +273,17 @@ const updateStaff = async (req, res, next) => {
 
   const { email } = req.body;
 
-  const user = await User.findOneAndUpdate({ email: req.body.email },  { userRole, otherRole }, {new: true});
+  const user = await User.findOneAndUpdate({ email: req.body.email }, { userRole, otherRole }, { new: true });
   if (!user) throw new NotFoundError("Error: This staff is not registered. They need to sign up before their details can be updated");
+  if (userRole == "admin") user.isAdmin = true
+  else user.isAdmin = false
+  user.save()
 
   const staffer = await Staff.findOneAndUpdate({ email }, req.body, { new: true })
   if (!staffer) throw new NotFoundError("Error: the staffer does not exist");
+  if (userRole == "admin") staffer.isAdmin = true
+  else staffer.isAdmin = false
+  staffer.save()
 
   res
     .status(200)

@@ -17,6 +17,7 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: true,
+      trim: true,
       maxlength: 1024
     },
     userRole: {
@@ -33,7 +34,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "nil",
       lowercase: true,
-      trim:true
+      trim:true,
+      enum: {
+        values: ["nil", "parent"],
+        message: "{VALUE} is not supported, other role can either be parent or nil",
+      },
     }
   },
   { timestamps: true }
