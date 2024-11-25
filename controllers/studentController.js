@@ -263,6 +263,12 @@ const updateStudent = async (req, res, next) => {
     inAttendance.student_name = req.body.firstName + " " + req.body.lastName
     inAttendance.save()
   }
+  // find student in billing database
+  const inBilling = await Billing.findOne({ admissionNumber: req.body.admNo })
+  if (inBilling) {
+    inBilling.studentName = req.body.firstName + " " + req.body.lastName
+    inBilling.save()
+  }
 
   res
     .status(200)
