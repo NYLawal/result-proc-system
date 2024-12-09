@@ -5,6 +5,7 @@ const {userSignUp,userLogIn,forgotPassword,resetPassword,portalRedirect, getUser
 const authenticateUser = require('../middleware/auth')
 
 
+router.get('/checkStatus', authenticateUser)
 router.route('/signup').post(userSignUp)
 router.route('/login').post(userLogIn)
 router.post('/forgotPassword', forgotPassword)

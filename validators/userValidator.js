@@ -14,29 +14,26 @@ function userSignUpValidator(user) {
       ),
     password: Joi.string()
       .required()
-      // .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,25}$/)
-      // .regex(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&^_-]{8,25}$/)
-      .regex(/^(.{0,7}|[^0-9]*|[^A-Z]*|[^a-z]*)$/)
-      .messages({ "string.pattern.base": "invalid password" })
+      .min(8)
+      .max(25)
       .error(
         new ValidationError(
-          "password must be 8 characters or more, with at least one number, a lowercase letter and an uppercase letter"
+          "password must be between 8 and 25 characters"
         )
       ),
     passwordRepeat: Joi.string()
       .required()
-      .regex(/^(.{0,7}|[^0-9]*|[^A-Z]*|[^a-z]*)$/)
-      .messages({ "string.pattern.base": "invalid password" })
+      .min(8)
+      .max(25)
       .error(
         new ValidationError(
-          "password must be 8 characters or more, with at least one number, a lowercase letter and an uppercase letter"
+          "password must be between 8 and 25 characters"
         )
       ),
   }).strict();
 
   return schema.validate(user);
 }
-
 
 function userLogInValidator(user) {
   const schema = Joi.object({
@@ -80,11 +77,11 @@ function resetPasswordValidator(user) {
   const schema = Joi.object({
     password: Joi.string()
       .required()
-      .regex(/^(.{0,7}|[^0-9]*|[^A-Z]*|[^a-z]*)$/)
-      .messages({ "string.pattern.base": "invalid password" })
+      .min(8)
+      .max(25)
       .error(
         new ValidationError(
-          "password must be 8 characters or more, with at least one number, a lowercase letter and an uppercase letter"
+          "password must be between 8 and 25 characters"
         )
       )
   }).strict()

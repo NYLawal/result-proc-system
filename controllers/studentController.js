@@ -289,7 +289,7 @@ const updateStatus = async (req, res, next) => {
   if (studentStatus == "past") {
     const student = await Student.findOneAndUpdate({ admNo }, { studentStatus: "past", nonStudentStatus }, { new: true })
     if (!student) return next(new Error("Error: no such student found"));
-    await Billing.findOneAndDelete({admNo})
+    await Billing.findOneAndDelete({ admNo })
   }
 
   res
@@ -326,7 +326,6 @@ const promoteStudents = async (req, res, next) => {
     else if (avgpercent >= minscore) {
       const student = await Student.findOne({ admNo: termRequest[i].admissionNumber })
 
-
       switch (student.presentClass) {
         case "tamhidi":
           student.presentClass = "hadoonah"
@@ -361,12 +360,27 @@ const promoteStudents = async (req, res, next) => {
         case "thaalith idaadiy":
           student.studentStatus = "past"
           break;
+        case "awwal mutawasith":
+          student.presentClass = "thaani mutawasith"
+          break;
+        case "thaani mutawasith":
+          student.presentClass = "thaalith mutawasith"
+          break;
+        case "thaalith mutawasith":
+          student.studentStatus = "past"
+          break;
         // default:  
       }
       student.classStatus = "promoted";
-      if ((student.programme == "barnamij" || student.programme == "female madrasah") && student.presentClass == "thaalith idaadiy") {
+      if (student.programme == "barnamij" && student.presentClass == "thaalith idaadiy") {
         student.studentStatus = "past";
         student.presentClass = "thaani idaadiy"
+      }
+      if (student.programme == "barnamij" && student.presentClass == "thaalith ibtidaahiy") {
+        student.presentClass = "thaani ibtidaahiy"
+      }
+      if (student.programme == "female madrasah" && student.presentClass == "awwal idaadiy") {
+        student.presentClass = "awwal mutawasith"
       }
       if ((student.programme == "adult madrasah") && student.presentClass == "thaalith idaadiy") {
         student.presentClass = "mutawasith"
@@ -424,12 +438,27 @@ const promoteOneStudent = async (req, res, next) => {
     case "thaalith idaadiy":
       student.studentStatus = "past"
       break;
+    case "awwal mutawasith":
+      student.presentClass = "thaani mutawasith"
+      break;
+    case "thaani mutawasith":
+      student.presentClass = "thaalith mutawasith"
+      break;
+    case "thaalith mutawasith":
+      student.studentStatus = "past"
+      break;
     // default:  
   }
   student.classStatus = "promoted";
-  if ((student.programme == "barnamij" || student.programme == "female madrasah") && student.presentClass == "thaalith idaadiy") {
+  if (student.programme == "barnamij" && student.presentClass == "thaalith idaadiy") {
     student.studentStatus = "past";
     student.presentClass = "thaani idaadiy"
+  }
+  if (student.programme == "barnamij" && student.presentClass == "thaalith ibtidaahiy") {
+    student.presentClass = "thaani ibtidaahiy"
+  }
+  if (student.programme == "female madrasah" && student.presentClass == "awwal idaadiy") {
+    student.presentClass = "awwal mutawasith"
   }
   if ((student.programme == "adult madrasah") && student.presentClass == "thaalith idaadiy") {
     student.presentClass = "mutawasith"
@@ -482,13 +511,26 @@ const demoteStudent = async (req, res, next) => {
     case "thaalith idaadiy":
       student.presentClass = "thaani idaadiy"
       break;
+    case "awwal mutawasith":
+      student.presentClass = "khaamis ibtidaahiy"
+      break;
+    case "thaani mutawasith":
+      student.presentClass = "awwal mutawasith"
+      break;
+    case "thaalith mutawasith":
+      student.presentClass = "thaani mutawasith"
+      break;
     case "mutawasith":
       student.presentClass = "thaalith idaadiy"
       break;
     // default:  
   }
-  if ((student.programme == "barnamij" || student.programme == "female madrasah") && student.presentClass == "thaalith idaadiy") {
-    student.presentClass = "thaani idaadiy"
+
+  if (student.programme == "barnamij" && student.presentClass == "thaani idaadiy") {
+     student.studentStatus = "current"
+  }
+  if ((student.programme == "female madrasah") && student.presentClass == "thaalith mutawasith") {
+     student.studentStatus = "current"
   }
   await student.save()
 
