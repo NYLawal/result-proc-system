@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const {userSignUp,userLogIn,forgotPassword,resetPassword,portalRedirect, getUserEmail, sendMessage} 
+const {userSignUp,userLogIn,forgotPassword,resetPassword,portalRedirect, getUserEmail, sendMessage, userAuthenticated} 
        = require('../controllers/userController')
 const authenticateUser = require('../middleware/auth')
 
 
-router.get('/checkStatus', authenticateUser)
+router.get('/checkStatus', authenticateUser, userAuthenticated)
 router.route('/signup').post(userSignUp)
 router.route('/login').post(userLogIn)
 router.post('/forgotPassword', forgotPassword)

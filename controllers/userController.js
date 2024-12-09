@@ -143,8 +143,12 @@ const sendMessage = async(req,res) => {
     res.status(200).send("Message Sent!");
 }
 
+const userAuthenticated = async(req,res) => {
+    res.status(200).send("Authenticated!");
+}
 
 
 
 
-module.exports = { userSignUp, userLogIn, forgotPassword, resetPassword, portalRedirect, getUserEmail, sendMessage}
+
+module.exports = { userSignUp, userLogIn, forgotPassword, resetPassword, portalRedirect, getUserEmail, sendMessage, userAuthenticated}
