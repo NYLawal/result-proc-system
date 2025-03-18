@@ -31,5 +31,15 @@
   },
   "devDependencies": {
     "debug": "^4.3.4"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NYLawal/result-proc-system.git"
+  },
+  "keywords": [],
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/NYLawal/result-proc-system/issues"
+  },
+  "homepage": "https://github.com/NYLawal/result-proc-system#readme"
 }

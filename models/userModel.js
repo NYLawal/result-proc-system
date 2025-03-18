@@ -34,10 +34,6 @@ const userSchema = new mongoose.Schema(
       default: "nil",
       lowercase: true,
       trim:true,
-      enum: {
-        values: ["nil", "parent"],
-        message: "{VALUE} is not supported, other role can either be parent or nil",
-      },
     }
   },
   { timestamps: true }
