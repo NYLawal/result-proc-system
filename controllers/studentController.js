@@ -394,15 +394,78 @@ const promoteStudents = async (req, res, next) => {
 };
 
 const promoteOneStudent = async (req, res, next) => {
-  const { admNo, programme } = req.body;
+  const { admNo, programme, promotionChoice, sessionName } = req.body;
 
-  const theStudent = await Student.findOne({ admNo })
+  const student = await Student.findOne({ admNo })
   const isValidStaff = await Staff.findOne({ email: req.user.email })
-  if (isValidStaff.teacherProgramme != theStudent.programme) {
+  if (isValidStaff.teacherProgramme != student.programme) {
     throw new UnAuthorizedError("Error: Sorry, you cannot promote a student of another programme")
   }
-  const student = await Student.findOne({ admNo })
+
   if (!student) throw new NotFoundError("Error: no such student found");
+  console.log("promochice", promotionChoice)
+
+  if (promotionChoice == "merit") {
+    const alreadyHasScores = await Score.findOne({ studentId: student._id })
+    if (!alreadyHasScores) throw new NotFoundError("Error: no scores registered for this student");
+    else {
+      console.log("name:", alreadyHasScores.student_name)
+      console.log("no:", alreadyHasScores.admissionNumber)
+      let result = alreadyHasScores.scores
+      for (let count = 0; count < result.length; count++) {
+        if (sessionName == result[count].sessionName) {
+          let className = result[count].className
+          console.log("class:", className)
+          switch (className) { // move student to the next class by changing the className of the session
+            case "tamhidi":
+              result[count].className = "hadoonah"
+              break;
+            case "hadoonah":
+              result[count].className = "rawdoh"
+              break;
+            case "rawdoh":
+              result[count].className = "awwal ibtidaahiy"
+              break;
+            case "awwal ibtidaahiy":
+              result[count].className = "thaani ibtidaahiy"
+              break;
+            case "thaani ibtidaahiy":
+              result[count].className = "thaalith ibtidaahiy"
+              break;
+            case "thaalith ibtidaahiy":
+              result[count].className = "raabi ibtidaahiy"
+              break;
+            case "raabi ibtidaahiy":
+              result[count].className = "khaamis ibtidaahiy"
+              break;
+            case "khaamis ibtidaahiy":
+              result[count].className = "awwal idaadiy"
+              break;
+            case "awwal idaadiy":
+              result[count].className = "thaani idaadiy"
+              break;
+            case "thaani idaadiy":
+              result[count].className = "thaalith idaadiy"
+              break;
+            case "thaalith idaadiy":
+              result[count].className = "past"
+              break;
+            case "awwal mutawasith":
+              result[count].className = "thaani mutawasith"
+              break;
+            case "thaani mutawasith":
+              result[count].className = "thaalith mutawasith"
+              break;
+            case "thaalith mutawasith":
+              result[count].className = "thaalith mutawasith"
+              break;
+            // default:  
+          }
+        }
+      }
+      await alreadyHasScores.save()
+    }
+  }
 
   switch (student.presentClass) {
     case "tamhidi":
@@ -527,10 +590,10 @@ const demoteStudent = async (req, res, next) => {
   }
 
   if (student.programme == "barnamij" && student.presentClass == "thaani idaadiy") {
-     student.studentStatus = "current"
+    student.studentStatus = "current"
   }
   if ((student.programme == "female madrasah") && student.presentClass == "thaalith mutawasith") {
-     student.studentStatus = "current"
+    student.studentStatus = "current"
   }
   await student.save()
 

@@ -260,6 +260,7 @@ const addScores = async (req, res, next) => {
 const getScores = async (req, res, next) => {
 
   const { admNo, termName, sessionName } = req.query;
+
   const isStudent = await Student.findOne({ admNo })
   // check whether student exists in the scores database
   //if not, return error message
@@ -289,8 +290,7 @@ const getScores = async (req, res, next) => {
   }
   const alreadyHasScores = await Score.findOne({ studentId: isStudent._id })
   if (!alreadyHasScores) throw new NotFoundError("Error: no scores registered for this student");
-  else { // if yes, return all registerd scores and attendance for the student in the session and year queried
-
+  else { // if yes, return all registered scores and attendance for the student in the session and year queried
     const stdAttendance = await Attendance.findOne({ admissionNumber: admNo })
     let attendance = []
 
@@ -355,7 +355,7 @@ const getScores = async (req, res, next) => {
             let nextTermDate = reportcarddetails.nextTermDate
             let principalSign = reportcarddetails.principalSignature
             let proprietorSign = reportcarddetails.proprietorSignature
-            
+    
             return res.status(200).json({
               status: "success", message: `${alreadyHasScores.student_name}`, termName, className, sessionName, report, comment, grandTotal, marksObtained, avgPercentage,
               firstTermScore, secondTermScore, attendance, maxAttendance, noInClass, ameedComment, teacherSignature, principalSign, proprietorSign, nextTermDate
@@ -448,7 +448,7 @@ const getClassScores = async (req, res, next) => {
         ]
     })
 
-  const detailsFound = await Score.find(
+    const detailsFound = await Score.find(
     {
       $and:
         [
@@ -463,7 +463,9 @@ const getClassScores = async (req, res, next) => {
     // filter the students that are in the requested class in the requested session from the students returned
     for (let n = 0; n < detailsFound.length; n++) {
       const requestedclass = detailsFound[n].scores.find(asession => asession.sessionName == sessionName)
-      if (requestedclass.className == className) {
+      const requestedterm = requestedclass.term.find(aterm => aterm.termName == termName)
+    
+      if (requestedclass.className == className && requestedterm !== undefined) {
         classExists.push(detailsFound[n])
       }
     }
