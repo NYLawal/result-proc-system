@@ -30,6 +30,9 @@ const scoreSchema = new mongoose.Schema({
           grandTotal:Number,
           marksObtained:Number,
           avgPercentage:Number,
+          position:Number,
+          attendancePresent:Number,
+          attendanceAbsent:Number,
       }],
       
     }]
