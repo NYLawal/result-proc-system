@@ -318,77 +318,77 @@ const promoteStudents = async (req, res, next) => {
   for (let i = 0; i < termRequest.length; i++) {
     const requestedsession = termRequest[i].scores.find(asession => asession.sessionName == sessionName)
     const requestedterm = requestedsession.term.find(aterm => aterm.termName == "third")
-    const avgpercent = requestedterm.avgPercentage
+    if (requestedterm) { // if student has scores for the requested term
+      const avgpercent = requestedterm.avgPercentage
 
-    if (avgpercent < minscore) {
-      await Student.findOneAndUpdate({ admNo: termRequest[i].admissionNumber }, { classStatus: "repeated" }, { new: true })
-    }
-    else if (avgpercent >= minscore) {
-      const student = await Student.findOne({ admNo: termRequest[i].admissionNumber })
-
-      switch (student.presentClass) {
-        case "tamhidi":
-          student.presentClass = "hadoonah"
-          break;
-        case "hadoonah":
-          student.presentClass = "rawdoh"
-          break;
-        case "rawdoh":
-          student.presentClass = "awwal ibtidaahiy"
-          break;
-        case "awwal ibtidaahiy":
-          student.presentClass = "thaani ibtidaahiy"
-          break;
-        case "thaani ibtidaahiy":
-          student.presentClass = "thaalith ibtidaahiy"
-          break;
-        case "thaalith ibtidaahiy":
-          student.presentClass = "raabi ibtidaahiy"
-          break;
-        case "raabi ibtidaahiy":
-          student.presentClass = "khaamis ibtidaahiy"
-          break;
-        case "khaamis ibtidaahiy":
-          student.presentClass = "awwal idaadiy"
-          break;
-        case "awwal idaadiy":
+      if (avgpercent < minscore) {
+        await Student.findOneAndUpdate({ admNo: termRequest[i].admissionNumber }, { classStatus: "repeated" }, { new: true })
+      }
+      else if (avgpercent >= minscore) {
+        const student = await Student.findOne({ admNo: termRequest[i].admissionNumber })
+        switch (student.presentClass) {
+          case "tamhidi":
+            student.presentClass = "hadoonah"
+            break;
+          case "hadoonah":
+            student.presentClass = "rawdoh"
+            break;
+          case "rawdoh":
+            student.presentClass = "awwal ibtidaahiy"
+            break;
+          case "awwal ibtidaahiy":
+            student.presentClass = "thaani ibtidaahiy"
+            break;
+          case "thaani ibtidaahiy":
+            student.presentClass = "thaalith ibtidaahiy"
+            break;
+          case "thaalith ibtidaahiy":
+            student.presentClass = "raabi ibtidaahiy"
+            break;
+          case "raabi ibtidaahiy":
+            student.presentClass = "khaamis ibtidaahiy"
+            break;
+          case "khaamis ibtidaahiy":
+            student.presentClass = "awwal idaadiy"
+            break;
+          case "awwal idaadiy":
+            student.presentClass = "thaani idaadiy"
+            break;
+          case "thaani idaadiy":
+            student.presentClass = "thaalith idaadiy"
+            break;
+          case "thaalith idaadiy":
+            student.studentStatus = "past"
+            break;
+          case "awwal mutawasith":
+            student.presentClass = "thaani mutawasith"
+            break;
+          case "thaani mutawasith":
+            student.presentClass = "thaalith mutawasith"
+            break;
+          case "thaalith mutawasith":
+            student.studentStatus = "past"
+            break;
+          // default:  
+        }
+        student.classStatus = "promoted";
+        if (student.programme == "barnamij" && student.presentClass == "thaalith idaadiy") {
+          student.studentStatus = "past";
           student.presentClass = "thaani idaadiy"
-          break;
-        case "thaani idaadiy":
-          student.presentClass = "thaalith idaadiy"
-          break;
-        case "thaalith idaadiy":
-          student.studentStatus = "past"
-          break;
-        case "awwal mutawasith":
-          student.presentClass = "thaani mutawasith"
-          break;
-        case "thaani mutawasith":
-          student.presentClass = "thaalith mutawasith"
-          break;
-        case "thaalith mutawasith":
-          student.studentStatus = "past"
-          break;
-        // default:  
+        }
+        if (student.programme == "barnamij" && student.presentClass == "thaalith ibtidaahiy") {
+          student.presentClass = "thaani ibtidaahiy"
+        }
+        if (student.programme == "female madrasah" && student.presentClass == "awwal idaadiy") {
+          student.presentClass = "awwal mutawasith"
+        }
+        if ((student.programme == "adult madrasah") && student.presentClass == "thaalith idaadiy") {
+          student.presentClass = "mutawasith"
+          student.studentStatus = "current"
+        }
+        await student.save()
       }
-      student.classStatus = "promoted";
-      if (student.programme == "barnamij" && student.presentClass == "thaalith idaadiy") {
-        student.studentStatus = "past";
-        student.presentClass = "thaani idaadiy"
-      }
-      if (student.programme == "barnamij" && student.presentClass == "thaalith ibtidaahiy") {
-        student.presentClass = "thaani ibtidaahiy"
-      }
-      if (student.programme == "female madrasah" && student.presentClass == "awwal idaadiy") {
-        student.presentClass = "awwal mutawasith"
-      }
-      if ((student.programme == "adult madrasah") && student.presentClass == "thaalith idaadiy") {
-        student.presentClass = "mutawasith"
-        student.studentStatus = "current"
-      }
-      await student.save()
     }
-
   }
   res.status(200).json({ status: "success", message: "Students have been successfully promoted" });
 };
@@ -409,13 +409,10 @@ const promoteOneStudent = async (req, res, next) => {
     const alreadyHasScores = await Score.findOne({ studentId: student._id })
     if (!alreadyHasScores) throw new NotFoundError("Error: no scores registered for this student");
     else {
-      console.log("name:", alreadyHasScores.student_name)
-      console.log("no:", alreadyHasScores.admissionNumber)
       let result = alreadyHasScores.scores
       for (let count = 0; count < result.length; count++) {
         if (sessionName == result[count].sessionName) {
           let className = result[count].className
-          console.log("class:", className)
           switch (className) { // move student to the next class by changing the className of the session
             case "tamhidi":
               result[count].className = "hadoonah"
