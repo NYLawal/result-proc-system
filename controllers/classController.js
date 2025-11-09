@@ -179,7 +179,8 @@ const getClassSubjects = async (req, res, next) => {
         { programme }
       ]
   })
-  if (!classExists) throw new NotFoundError("Error: this class has no registered subjects");
+  if (!classExists) throw new NotFoundError("Error: this class is not registered");
+  if (classExists.subjects.length == 0) throw new NotFoundError("Error: this class has no registered subjects");
   res.status(200).json({ status: "success", message: "successful", classExists });
 }
 
@@ -193,7 +194,7 @@ const addClassSubject = async (req, res, next) => {
         { programme }
       ]
   })
-  // console.log(req.body)
+  
   if (!classExists) throw new NotFoundError("Error: the requested class does not exist");
   for (let count = 0; count < classExists.subjects.length; count++) {
     if (classExists.subjects[count] == subject)

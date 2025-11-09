@@ -326,6 +326,7 @@ const promoteStudents = async (req, res, next) => {
       }
       else if (avgpercent >= minscore) {
         const student = await Student.findOne({ admNo: termRequest[i].admissionNumber })
+        // console.log("passed", termRequest[i].admissionNumber, termRequest[i].student_name)
         switch (student.presentClass) {
           case "tamhidi":
             student.presentClass = "hadoonah"
@@ -369,6 +370,15 @@ const promoteStudents = async (req, res, next) => {
           case "thaalith mutawasith":
             student.studentStatus = "past"
             break;
+          case "Al-Awwal A-thaanawiy":
+            student.presentClass = "A-thaani A-thaanawiy"
+            break;
+          case "A-thaani A-thaanawiy":
+            student.presentClass = "A-thaalith A-thaanawiy"
+            break;
+          case "A-thaalith A-thaanawiy":
+            student.studentStatus = "past"
+            break;
           // default:  
         }
         student.classStatus = "promoted";
@@ -383,7 +393,7 @@ const promoteStudents = async (req, res, next) => {
           student.presentClass = "awwal mutawasith"
         }
         if ((student.programme == "adult madrasah") && student.presentClass == "thaalith idaadiy") {
-          student.presentClass = "mutawasith"
+          student.presentClass = "Al-Awwal A-thaanawiy"
           student.studentStatus = "current"
         }
         await student.save()
@@ -507,6 +517,15 @@ const promoteOneStudent = async (req, res, next) => {
     case "thaalith mutawasith":
       student.studentStatus = "past"
       break;
+    case "Al-Awwal A-thaanawiy":
+      student.presentClass = "A-thaani A-thaanawiy"
+      break;
+    case "A-thaani A-thaanawiy":
+      student.presentClass = "A-thaalith A-thaanawiy"
+      break;
+    case "A-thaalith A-thaanawiy":
+      student.studentStatus = "past"
+      break;
     // default:  
   }
   student.classStatus = "promoted";
@@ -521,7 +540,7 @@ const promoteOneStudent = async (req, res, next) => {
     student.presentClass = "awwal mutawasith"
   }
   if ((student.programme == "adult madrasah") && student.presentClass == "thaalith idaadiy") {
-    student.presentClass = "mutawasith"
+    student.presentClass = "Al-Awwal A-thaanawiy"
     student.studentStatus = "current"
   }
   await student.save()
@@ -569,7 +588,7 @@ const demoteStudent = async (req, res, next) => {
       student.presentClass = "awwal idaadiy"
       break;
     case "thaalith idaadiy":
-      student.presentClass = "thaani idaadiy"
+      student.presentClass = "thaani idaadiy";
       break;
     case "awwal mutawasith":
       student.presentClass = "khaamis ibtidaahiy"
@@ -580,8 +599,15 @@ const demoteStudent = async (req, res, next) => {
     case "thaalith mutawasith":
       student.presentClass = "thaani mutawasith"
       break;
-    case "mutawasith":
+    case "Al-Awwal A-thaanawiy":
       student.presentClass = "thaalith idaadiy"
+      break;
+    case "A-thaani A-thaanawiy":
+      student.presentClass = "Al-Awwal A-thaanawiy"
+      break;
+    case "A-thaalith A-thaanawiy":
+      student.presentClass = "A-thaani A-thaanawiy"
+      student.studentStatus = "current"
       break;
     // default:  
   }
