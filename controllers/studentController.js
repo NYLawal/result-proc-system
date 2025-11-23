@@ -326,7 +326,7 @@ const promoteStudents = async (req, res, next) => {
       }
       else if (avgpercent >= minscore) {
         const student = await Student.findOne({ admNo: termRequest[i].admissionNumber })
-        // console.log("passed", termRequest[i].admissionNumber, termRequest[i].student_name)
+        
         switch (student.presentClass) {
           case "tamhidi":
             student.presentClass = "hadoonah"
@@ -370,13 +370,13 @@ const promoteStudents = async (req, res, next) => {
           case "thaalith mutawasith":
             student.studentStatus = "past"
             break;
-          case "Al-Awwal A-thaanawiy":
-            student.presentClass = "A-thaani A-thaanawiy"
+          case "al-awwal a-thaanawiy":
+            student.presentClass = "a-thaani a-thaanawiy"
             break;
-          case "A-thaani A-thaanawiy":
-            student.presentClass = "A-thaalith A-thaanawiy"
+          case "a-thaani a-thaanawiy":
+            student.presentClass = "a-thaalith a-thaanawiy"
             break;
-          case "A-thaalith A-thaanawiy":
+          case "a-thaalith a-thaanawiy":
             student.studentStatus = "past"
             break;
           // default:  
@@ -393,7 +393,7 @@ const promoteStudents = async (req, res, next) => {
           student.presentClass = "awwal mutawasith"
         }
         if ((student.programme == "adult madrasah") && student.presentClass == "thaalith idaadiy") {
-          student.presentClass = "Al-Awwal A-thaanawiy"
+          student.presentClass = "al-awwal a-thaanawiy"
           student.studentStatus = "current"
         }
         await student.save()
@@ -413,8 +413,6 @@ const promoteOneStudent = async (req, res, next) => {
   }
 
   if (!student) throw new NotFoundError("Error: no such student found");
-  console.log("promochice", promotionChoice)
-
   if (promotionChoice == "merit") {
     const alreadyHasScores = await Score.findOne({ studentId: student._id })
     if (!alreadyHasScores) throw new NotFoundError("Error: no scores registered for this student");
@@ -517,16 +515,16 @@ const promoteOneStudent = async (req, res, next) => {
     case "thaalith mutawasith":
       student.studentStatus = "past"
       break;
-    case "Al-Awwal A-thaanawiy":
-      student.presentClass = "A-thaani A-thaanawiy"
+    case "al-awwal a-thaanawiy":
+      student.presentClass = "a-thaani a-thaanawiy"
       break;
-    case "A-thaani A-thaanawiy":
-      student.presentClass = "A-thaalith A-thaanawiy"
+    case "a-thaani a-thaanawiy":
+      student.presentClass = "a-thaalith a-thaanawiy"
       break;
-    case "A-thaalith A-thaanawiy":
+    case "a-thaalith a-thaanawiy":
       student.studentStatus = "past"
       break;
-    // default:  
+    default: throw new BadUserRequestError("Error: There was an error promoting this student");
   }
   student.classStatus = "promoted";
   if (student.programme == "barnamij" && student.presentClass == "thaalith idaadiy") {
@@ -540,7 +538,7 @@ const promoteOneStudent = async (req, res, next) => {
     student.presentClass = "awwal mutawasith"
   }
   if ((student.programme == "adult madrasah") && student.presentClass == "thaalith idaadiy") {
-    student.presentClass = "Al-Awwal A-thaanawiy"
+    student.presentClass = "al-awwal a-thaanawiy"
     student.studentStatus = "current"
   }
   await student.save()
@@ -599,17 +597,17 @@ const demoteStudent = async (req, res, next) => {
     case "thaalith mutawasith":
       student.presentClass = "thaani mutawasith"
       break;
-    case "Al-Awwal A-thaanawiy":
+    case "al-awwal a-thaanawiy":
       student.presentClass = "thaalith idaadiy"
       break;
-    case "A-thaani A-thaanawiy":
-      student.presentClass = "Al-Awwal A-thaanawiy"
+    case "a-thaani a-thaanawiy":
+      student.presentClass = "al-awwal a-thaanawiy"
       break;
-    case "A-thaalith A-thaanawiy":
-      student.presentClass = "A-thaani A-thaanawiy"
+    case "a-thaalith a-thaanawiy":
+      student.presentClass = "a-thaani a-thaanawiy"
       student.studentStatus = "current"
       break;
-    // default:  
+    default:  throw new BadUserRequestError("Error: There was an error demoting this student")
   }
 
   if (student.programme == "barnamij" && student.presentClass == "thaani idaadiy") {
