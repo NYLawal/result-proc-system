@@ -57,9 +57,10 @@ app.use('/api/v1/billing', billingRouter )
 app.use(errorHandler)
 
  const port = process.env.PORT || 5000
+
 async function start(){
     try {
-        const success = await connectDB(process.env.Mongo_URI)
+        const success = await connectDB(process.env.MONGO_URI)
         if (success) console.log('connected')
         app.listen(port, startupDebugger(`server listening on port ${port}`))
     } catch (error) {

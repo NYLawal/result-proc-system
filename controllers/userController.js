@@ -1,5 +1,5 @@
 const { MailNotSentError, BadUserRequestError, NotFoundError, UnAuthorizedError } =
-    require('../middleware/errors')
+require('../middleware/errors')
 require('dotenv').config();
 const _ = require('lodash')
 const bcrypt = require('bcrypt')

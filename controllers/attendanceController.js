@@ -99,16 +99,30 @@ const getAttendance = async (req, res, next) => {
             { "attendanceRecord.className": className },
         ]
     })
+
     if (attendanceExists.length == 0) throw new NotFoundError("Error: the requested class attendance does not exist");
 
-    //get attendance
     for (let recordcount = 0; recordcount < attendanceExists.length; recordcount++) {
+        console.log(attendanceExists[recordcount].admissionNumber)
+        console.log(attendanceExists[recordcount].student_name)
+        let stdAdmNo = attendanceExists[recordcount].admissionNumber;
+        let isStudent = Student.findOne({ admNo: stdAdmNo })
         let studentAtd = attendanceExists[recordcount].attendanceRecord // attendance record for the student for all sessions available
         let sessionAttendance = studentAtd.find(asession => asession.sessionName == sessionName)
-        let termRequested = sessionAttendance.term.find(aterm => aterm.termName == termName)
-        if (!termRequested) throw new NotFoundError("Error: attendance does not exist for this term");
-        if (termRequested.attendance.length == 0) throw new NotFoundError("Error: no attendance has been recorded for this term");
+        if (!sessionAttendance) throw new NotFoundError("Error: no attendance for the session");
+        if (isStudent.presentClass == className && isStudent.studentStatus == "current") {
+            let termRequested = sessionAttendance.term.find(aterm => aterm.termName == termName)
+            if (!termRequested) {
+                attendanceExists.splice(recordcount, 1);
+                continue;
+            }
+        }
+        else {
+            attendanceExists.splice(recordcount, 1);
+            continue;
+        }
     }
+    // if (termRequested.attendance.length == 0) throw new NotFoundError("Error: no attendance has been recorded for this term");
 
     return res.status(200).json({
         status: "success",

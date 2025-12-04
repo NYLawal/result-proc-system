@@ -289,7 +289,8 @@ const updateStatus = async (req, res, next) => {
   if (studentStatus == "past") {
     const student = await Student.findOneAndUpdate({ admNo }, { studentStatus: "past", nonStudentStatus }, { new: true })
     if (!student) return next(new Error("Error: no such student found"));
-    await Billing.findOneAndDelete({ admNo })
+    await Billing.findOneAndDelete({ admissionNumber : admNo })
+    await Attendance.findOneAndDelete({ admissionNumber : admNo })
   }
 
   res
@@ -387,7 +388,7 @@ const promoteStudents = async (req, res, next) => {
           student.presentClass = "thaani idaadiy"
         }
         if (student.programme == "barnamij" && student.presentClass == "thaalith ibtidaahiy") {
-          student.presentClass = "thaani ibtidaahiy"
+          student.presentClass = "awwal idaadiy"
         }
         if (student.programme == "female madrasah" && student.presentClass == "awwal idaadiy") {
           student.presentClass = "awwal mutawasith"
@@ -532,7 +533,7 @@ const promoteOneStudent = async (req, res, next) => {
     student.presentClass = "thaani idaadiy"
   }
   if (student.programme == "barnamij" && student.presentClass == "thaalith ibtidaahiy") {
-    student.presentClass = "thaani ibtidaahiy"
+    student.presentClass = "awwal idaadiy"
   }
   if (student.programme == "female madrasah" && student.presentClass == "awwal idaadiy") {
     student.presentClass = "awwal mutawasith"
