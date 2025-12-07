@@ -84,7 +84,6 @@ const markAttendance = async (req, res, next) => {
 
 const getAttendance = async (req, res, next) => {
     const { termName, sessionName, className, programme } = req.query;
-    // console.log(termName, sessionName, className, programme)
     if (req.user.role == "admin") {
         const isValidStaff = await Staff.findOne({ email: req.user.email })
         if (isValidStaff.teacherProgramme != programme) {
@@ -99,32 +98,25 @@ const getAttendance = async (req, res, next) => {
             { "attendanceRecord.className": className },
         ]
     })
-
     if (attendanceExists.length == 0) throw new NotFoundError("Error: the requested class attendance does not exist");
     let attendanceForTerm = [];
-    
+
     for (let recordcount = 0; recordcount < attendanceExists.length; recordcount++) {
         let stdAdmNo = attendanceExists[recordcount].admissionNumber;
         let isStudent = await Student.findOne({ admNo: stdAdmNo })
-        
+
         let studentAtd = attendanceExists[recordcount].attendanceRecord // attendance record for the student for all sessions available
         let sessionAttendance = studentAtd.find(asession => asession.sessionName == sessionName)
         // if (!sessionAttendance) throw new NotFoundError("Error: no attendance for the session");
-        
+
         if (isStudent.studentStatus === "current") {
             let termRequested = sessionAttendance.term.find(aterm => aterm.termName == termName)
-            // if (!termRequested) {
-            //     attendanceExists.splice(recordcount, 1);
-            //     continue;
-            // }
+
             if (termRequested) {
                 attendanceForTerm.push(attendanceExists[recordcount]);
             }
         }
-
     }
-    // if (termRequested.attendance.length == 0) throw new NotFoundError("Error: no attendance has been recorded for this term");
-
     return res.status(200).json({
         status: "success",
         termName,
