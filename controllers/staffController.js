@@ -161,7 +161,7 @@ const getClassesAssigned = async (req, res, next) => {
 const getTeacherClass = async (req, res, next) => {
   const teacher = await Staff.findOne({ email: req.user.email })
     .select('teacherClass teacherProgramme')
-
+ 
   if (!teacher) throw new NotFoundError("Error: You have not been assigned as a teacher");
   res.status(200).json({
     status: "Success",

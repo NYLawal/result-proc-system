@@ -39,6 +39,7 @@ const userSignUp = async (req, res, next) => {
     if (isStaff) {
         req.body.userRole = isStaff.role;
         req.body.isAdmin = isStaff.isAdmin;
+        if (isStudent) req.body.otherRole = "student";
         if (isParent) req.body.otherRole = "parent";
     }
 

@@ -289,8 +289,8 @@ const updateStatus = async (req, res, next) => {
   if (studentStatus == "past") {
     const student = await Student.findOneAndUpdate({ admNo }, { studentStatus: "past", nonStudentStatus }, { new: true })
     if (!student) return next(new Error("Error: no such student found"));
-    await Billing.findOneAndDelete({ admissionNumber : admNo })
-    await Attendance.findOneAndDelete({ admissionNumber : admNo })
+    await Billing.findOneAndDelete({ admissionNumber: admNo })
+    await Attendance.findOneAndDelete({ admissionNumber: admNo })
   }
 
   res
@@ -327,7 +327,7 @@ const promoteStudents = async (req, res, next) => {
       }
       else if (avgpercent >= minscore) {
         const student = await Student.findOne({ admNo: termRequest[i].admissionNumber })
-        
+
         switch (student.presentClass) {
           case "tamhidi":
             student.presentClass = "hadoonah"
@@ -409,10 +409,11 @@ const promoteOneStudent = async (req, res, next) => {
 
   const student = await Student.findOne({ admNo })
   const isValidStaff = await Staff.findOne({ email: req.user.email })
-  if (isValidStaff.teacherProgramme != student.programme) {
-    throw new UnAuthorizedError("Error: Sorry, you cannot promote a student of another programme")
+  if (isValidStaff.role != "superadmin") {
+    if (isValidStaff.teacherProgramme != student.programme) {
+      throw new UnAuthorizedError("Error: Sorry, you cannot promote a student of another programme")
+    }
   }
-
   if (!student) throw new NotFoundError("Error: no such student found");
   if (promotionChoice == "merit") {
     const alreadyHasScores = await Score.findOne({ studentId: student._id })
@@ -608,7 +609,7 @@ const demoteStudent = async (req, res, next) => {
       student.presentClass = "a-thaani a-thaanawiy"
       student.studentStatus = "current"
       break;
-    default:  throw new BadUserRequestError("Error: There was an error demoting this student")
+    default: throw new BadUserRequestError("Error: There was an error demoting this student")
   }
 
   if (student.programme == "barnamij" && student.presentClass == "thaani idaadiy") {
