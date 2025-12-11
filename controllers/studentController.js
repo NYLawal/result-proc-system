@@ -64,8 +64,7 @@ const getStudents = async (req, res, next) => {
   let pageNumber = +req.params.page || 1;
   const pageSize = 10;
   let queryObject = req.query;
-  console.lo
-
+ 
   const { admNo, firstName, lastName, gender, address, entryClass, stateOfOrigin, maritalStatus, programme, presentClass, classStatus, studentStatus, paymentStatus } = req.query;
   // let queryObject = {};
 
@@ -615,9 +614,17 @@ const demoteStudent = async (req, res, next) => {
   if (student.programme == "barnamij" && student.presentClass == "thaani idaadiy") {
     student.studentStatus = "current"
   }
+  if (student.programme == "barnamij" && student.presentClass == "awwal idaadiy") {
+    student.presentClass == "thaani ibtidaahiy"
+    student.studentStatus = "current"
+  }
   if ((student.programme == "female madrasah") && student.presentClass == "thaalith mutawasith") {
     student.studentStatus = "current"
   }
+  if ((student.programme == "adult madrasah") && student.presentClass == "al-awwal a-thaanawiy") {
+          student.presentClass = "thaalith idaadiy"
+          student.studentStatus = "current"
+        }
   await student.save()
 
   res.status(200).json({ status: "success", message: "Student has been successfully demoted" });

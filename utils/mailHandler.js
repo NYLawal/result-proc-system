@@ -15,15 +15,15 @@ const SENDMAIL = async (email, subject, text) => {
         `;
 
         const response = await resend.emails.send({
-            from: `YourApp <${process.env.EMAIL_USER}>`,
+            from: `Support Team at Riyad <${process.env.EMAIL_USER}>`,
             to: email,
             subject: subject,
             html: htmlContent
         });
 
-        console.log("Email sent:", response);
+        console.log("Email sent successfully:", response);
     } catch (error) {
-        console.log("Email not sent:", error);
+        console.log("Error sending email:", error);
     }
 };
 
